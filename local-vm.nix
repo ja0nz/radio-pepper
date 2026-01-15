@@ -3,6 +3,7 @@
   pkgs,
   modulesPath,
   lib,
+  sshPort,
   ...
 }:
 
@@ -37,8 +38,8 @@
       } # HTTPS
       {
         from = "host";
-        host.port = lib.toInt (builtins.getEnv "SSH_PORT");
-        guest.port = lib.toInt (builtins.getEnv "SSH_PORT");
+        host.port = 2222;
+        guest.port = sshPort;
       } # SSH
     ];
   };

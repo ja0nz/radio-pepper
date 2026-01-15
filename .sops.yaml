@@ -1,0 +1,9 @@
+# .sops.yaml
+keys:
+  - &admin_key age1g4qqkd4l55kl2q8x85d78dm84fgazv5nns6n3fw7zw6lp8m9k9wsc6w70d
+
+creation_rules:
+  - path_regex: secrets/.*\.yaml$  # Matches any yaml in the secrets folder
+    key_groups:
+      - age:
+          - *admin_key

@@ -1,0 +1,99 @@
+[env]
+USER = "radio" # TODO This value is set here and in configuration.nix
+SSH_PORT = "22" # TODO This value is set here and in flake.nix
+REMOTE_IP4 = "91.98.131.171"
+
+SOPS_AGE_KEY_FILE="{{config_root}}/secrets/age-key.txt"
+_.source = "mise-tasks/get_fnox_age_key"
+
+[tools]
+age = "latest"
+hcloud = "latest"
+sops = "latest"
+
+#[shell_alias]
+#dev-ssh = "mise r dev-ssh"
+#prod-ssh = "mise r prod-ssh"
+
+[tasks.vm-start]
+description = "Start the local development qemu vm"
+run = '''
+    # 🚀 Starting local VM...
+    echo "This will start a NixOS VM with your configuration"
+    echo "The VM will be accessible at: http://localhost:8080"
+    echo ""
+
+    mkdir -p "$MISE_PROJECT_ROOT/.state/vm"
+    export NIX_DISK_IMAGE="$MISE_PROJECT_ROOT/.state/vm/local.qcow2"
+
+    "$MISE_PROJECT_ROOT/build/vm/bin/run-pepper-vm"
+'''
+
+[tasks.vm-build]
+description = "Build a local qemu vm"
+run = '''
+    # Building VM...
+
+    nix build "$MISE_PROJECT_ROOT#nixosConfigurations.dev-local.config.system.build.vm" \
+        -o "$MISE_PROJECT_ROOT/build/vm"
+    echo "✅ VM built! Run 'mise r vm-start' to launch it"
+'''
+
+[tasks.dev-ssh]
+description = "Connect to local VM"
+run = '''
+    # Connect SSH on port 2222...
+
+    echo "waiting for local VM to accept connections..."
+    until nc -z localhost 2222; do sleep 1; done
+
+    KEY_PATH=$(mktemp)
+    trap 'rm -f "$KEY_PATH"' EXIT
+    chmod 600 "$KEY_PATH"
+    fnox get LOCAL_SSH > "$KEY_PATH"
+
+    ssh -i "$KEY_PATH" \
+        -o IdentitiesOnly=yes \
+        -o UserKnownHostsFile=/dev/null \
+        -o StrictHostKeyChecking=no \
+        $USER@localhost -p 2222
+'''
+
+[tasks.prod-ssh]
+description = "Connect to remote VM"
+run = '''
+    # Connect SSH on port $SSH_PORT...
+
+    echo "waiting for remote VM to accept connections..."
+    until nc -z $REMOTE_IP4 $SSH_PORT; do sleep 1; done
+
+    KEY_PATH=$(mktemp)
+    trap 'rm -f "$KEY_PATH"' EXIT
+    chmod 600 "$KEY_PATH"
+    fnox get REMOTE_SSH > "$KEY_PATH"
+
+    ssh -i "$KEY_PATH" \
+        -o IdentitiesOnly=yes \
+        $USER@$REMOTE_IP4 -p $SSH_PORT
+'''
+
+[hooks]
+enter = '''
+    echo "🌥️  Radio Pepper"
+    echo ""
+    echo "📍 Local development mode"
+    echo ""
+    echo "Available commands:"
+    echo "  mise r vm-build      - Build the test VM"
+    echo "  mise r vm-start      - Start the test VM"
+    echo "  test-build    - Test configuration without VM"
+    echo ""
+    echo "📍 Remote deployment mode"
+    echo "Server: $REMOTE_IP4"
+    echo ""
+    echo "Available commands:"
+    echo "  mise r deploy        - Deploy to remote server"
+    echo "  mise r dev-ssh       - SSH into local server"
+    echo "  mise r prod-ssh      - SSH into prodo server"
+    echo ""
+'''

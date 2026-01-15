@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+export FNOX_AGE_KEY="$(cat $SOPS_AGE_KEY_FILE | grep 'AGE-SECRET-KEY')"

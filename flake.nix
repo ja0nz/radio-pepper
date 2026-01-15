@@ -31,6 +31,7 @@
         }:
         nixpkgs.lib.nixosSystem {
           inherit system;
+          specialArgs = { sshPort = 22; };
           modules = sharedModules ++ extraModules;
         };
     in

@@ -2,11 +2,12 @@
   config,
   pkgs,
   lib,
+  sshPort,
   ...
 }:
 
 let
-  username = builtins.getEnv "USER";
+  username = "radio";
 in
 {
   # Basic system configuration
@@ -18,7 +19,7 @@ in
     firewall = {
       enable = true;
       allowedTCPPorts = [
-        (lib.toInt (builtins.getEnv "SSH_PORT"))
+        sshPort
         80
         443
       ];
@@ -29,8 +30,14 @@ in
   services.openssh = {
     enable = true;
     ports = [
-      (lib.toInt (builtins.getEnv "SSH_PORT"))
+      sshPort
     ];
+    hostKeys = [
+    {
+      path = "/etc/ssh/ssh_host_ed25519_key";
+      type = "ed25519";
+    }
+  ];
     settings = {
       PasswordAuthentication = false;
       KbdInteractiveAuthentication = false;
@@ -48,7 +55,8 @@ in
       "wheel"
     ];
     openssh.authorizedKeys.keys = [
-      (builtins.getEnv "SSH_PUB")
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKVYORHTB+a29UzmlZNFU9UkEvIHhBZKzDgiof8Q4xkO remote-radio-pepper-key"
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIONWYt7n5qJC99fRPLxCcgzfB46qfAKXm3F+sgvbeT03 local-radio-pepper-key"
     ];
   };
 
