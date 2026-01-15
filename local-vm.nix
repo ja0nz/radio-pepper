@@ -45,7 +45,11 @@
   };
 
   boot = {
-    loader.grub.enable = true;
+    loader.grub = {
+      # enable = true;
+      efiSupport = true;
+      efiInstallAsRemovable = true;
+    };
     kernelParams = [
       "console=ttyS0"
     ];

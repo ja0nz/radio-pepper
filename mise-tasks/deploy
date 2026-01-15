@@ -54,8 +54,7 @@ fi
 # === Deploy: Run nixos-anywhere ===
 echo "🚀 Deploying to $deployment_user@$REMOTE_IP4 on port $deployment_port..."
 
-nix run --extra-experimental-features 'nix-command flakes' \
-    github:nix-community/nixos-anywhere -- \
+nix run github:nix-community/nixos-anywhere -- \
         --flake "$MISE_PROJECT_ROOT#prod-remote" \
         --extra-files "$temp_dir" \
         --target-host "$deployment_user@$REMOTE_IP4" \

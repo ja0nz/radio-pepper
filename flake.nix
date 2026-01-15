@@ -45,7 +45,6 @@
       nixosConfigurations.prod-remote = mkConfig {
         extraModules = [
           ./modules/hetzner/hardware-configuration.nix
-          ./modules/hetzner/disko-config.nix
           inputs.disko.nixosModules.disko
         ];
       };
