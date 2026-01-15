@@ -31,7 +31,9 @@
         }:
         nixpkgs.lib.nixosSystem {
           inherit system;
-          specialArgs = { sshPort = 22; };
+          specialArgs = {
+            sshPort = 22;
+          };
           modules = sharedModules ++ extraModules;
         };
     in
@@ -47,6 +49,8 @@
           inputs.disko.nixosModules.disko
         ];
       };
+
+      formatter.x86_64-linux = nixpkgs.legacyPackages.${system}.nixfmt-tree;
 
       # Development environment
       devShells.${system}.default = inputs.devenv.lib.mkShell {

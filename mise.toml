@@ -9,6 +9,7 @@ _.source = "mise-tasks/get_fnox_age_key"
 [tools]
 age = "latest"
 hcloud = "latest"
+pre-commit = "latest"
 sops = "latest"
 
 #[shell_alias]
