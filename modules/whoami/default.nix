@@ -2,6 +2,7 @@
   pkgs,
   lib,
   mkAddr,
+  port,
   ...
 }:
 
@@ -10,7 +11,7 @@ let
   cfg = {
     image = "traefik/whoami:latest";
     containerPort = "3993";
-    hostPort = "8081";
+    hostPort = port.whoami;
     network = "podman";
     domain = "radiopepper.website";
   };

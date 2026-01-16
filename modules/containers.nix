@@ -8,6 +8,11 @@
 let
   # Caddy helper
   mkAddr = addr: if lib.hasSuffix ".local" addr then "http://${addr}" else addr;
+  port = {
+    tinyauth = "3000";
+    whoami = "8081";
+    wordpress = "8082";
+  };
 in
 {
   imports = [
@@ -15,7 +20,7 @@ in
     ./tinyauth
     # ./wordpress
   ];
-  _module.args = { inherit mkAddr; };
+  _module.args = { inherit mkAddr port; };
   sops = {
     defaultSopsFormat = "yaml";
     age.keyFile = "/var/lib/sops-nix/age-key.txt";
@@ -27,7 +32,7 @@ in
     email = "radio.pepper.cert@ja.nz";
     extraConfig = ''
       (tinyauth_forwarder) {
-        forward_auth localhost:3000 {
+        forward_auth localhost:${port.tinyauth} {
           uri /api/auth/caddy
         }
       }

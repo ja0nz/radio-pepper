@@ -2,6 +2,7 @@
   pkgs,
   lib,
   mkAddr,
+  port,
   ...
 }:
 
@@ -10,7 +11,7 @@ let
   cfg = {
     image = "ghcr.io/steveiliop56/tinyauth:v4";
     containerPort = "3000";
-    hostPort = "3000";
+    hostPort = port.tinyauth;
     network = "podman";
     domain = "auth.radiopepper.website";
   };

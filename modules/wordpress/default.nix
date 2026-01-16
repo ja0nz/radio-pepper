@@ -2,6 +2,7 @@
   pkgs,
   lib,
   mkAddr,
+  port,
   config,
   ...
 }:
@@ -12,7 +13,7 @@ let
     wp = {
       image = "docker.io/library/wordpress:latest";
       containerPort = "80";
-      hostPort = "8082";
+      hostPort = port.wordpress;
     };
     db = {
       image = "docker.io/library/mariadb:latest";
