@@ -18,6 +18,7 @@ in
     hostName = "pepper";
     firewall = {
       enable = true;
+      trustedInterfaces = [ "podman1" ];
       allowedTCPPorts = [
         sshPort
         80
@@ -42,6 +43,25 @@ in
       PasswordAuthentication = false;
       KbdInteractiveAuthentication = false;
     };
+  };
+
+  # Some helpers
+  environment.shellAliases = {
+    sd = "sudo shutdown now";
+    sc = "systemctl";
+    scs = "systemctl status";
+    scu = "systemctl --user";
+    start = "sudo systemctl start";
+    stop = "sudo systemctl stop";
+    restart = "sudo systemctl restart";
+    jc = "journalctl";
+    jcx = "journalctl -xeu";
+    jcf = "journalctl -f";
+    jcb = "journalctl -b";
+    jcu = "journalctl -u";
+    p = "sudo podman";
+    pr = "sudo podman run -ti";
+    ".." = "cd ..";
   };
 
   # User for running containers

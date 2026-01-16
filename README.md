@@ -5,3 +5,8 @@ mise doctor
 
 TODO
 - [ ] https://github.com/nix-community/impermanence
+
+
+Interactive Testing
+https://nixery.dev/
+podman run -ti nixery.dev/shell/git/htop bash
