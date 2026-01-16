@@ -2,7 +2,7 @@
 USER = "radio" # TODO This value is set here and in configuration.nix
 SSH_PORT = "22" # TODO This value is set here and in flake.nix
 REMOTE_IP4 = "91.98.131.171"
-SSH_LOGIN = "$MISE_PROJECT_ROOT/secrets/ssh_private_keys.enc.yaml"
+SSH_LOGIN = "./secrets/ssh_private_keys.enc.yaml"
 
 SOPS_AGE_KEY_FILE="{{config_root}}/secrets/age-key.txt"
 
