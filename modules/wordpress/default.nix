@@ -22,7 +22,7 @@ let
       public = "podman"; # Talk to Caddy
       internal = "wordpress-net"; # Talk to DB
     };
-    domain = "two.local";
+    domain = "wp.radiopepper.website";
     sopsFile = ./secrets.enc.yaml;
   };
 
@@ -44,8 +44,8 @@ in
 {
   services.caddy.virtualHosts."${mkAddr cfg.domain}" = {
     extraConfig = ''
+      import tinyauth_forwarder
       reverse_proxy localhost:${cfg.wp.hostPort}
-      log { output file /var/log/caddy/wordpress.log }
     '';
   };
 

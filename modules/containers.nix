@@ -12,7 +12,8 @@ in
 {
   imports = [
     ./whoami
-    ./wordpress
+    ./tinyauth
+    # ./wordpress
   ];
   _module.args = { inherit mkAddr; };
   sops = {
@@ -24,6 +25,17 @@ in
   services.caddy = {
     enable = true;
     email = "radio.pepper.cert@ja.nz";
+    extraConfig = ''
+      (tinyauth_forwarder) {
+        forward_auth localhost:3000 {
+          uri /api/auth/caddy
+        }
+      }
+
+      # Example of how to use the snippet in VirtualHosts extraConfig:
+      #   import tinyauth_forwarder
+      #   reverse_proxy localhost:8080
+    '';
   };
 
   virtualisation.podman = {
