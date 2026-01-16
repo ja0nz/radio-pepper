@@ -44,11 +44,11 @@
         "nixpkgs": "nixpkgs"
       },
       "locked": {
-        "lastModified": 1768406370,
-        "narHash": "sha256-9aWoZQMzE0lBE2EFSCHAI4Zue+jpL/DF13UGf6zfOr8=",
+        "lastModified": 1768572621,
+        "narHash": "sha256-rS2jTj1fWCXO796egDcIsD71CBEr5ZXjF/LUzz5U8Ug=",
         "owner": "cachix",
         "repo": "devenv",
-        "rev": "9487ba6df6cbbfb59c051f9410cdc4521a4471ed",
+        "rev": "752d1234cf6183cd43439e08f4d519c56f0dc19d",
         "type": "github"
       },
       "original": {
@@ -203,11 +203,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1768322802,
-        "narHash": "sha256-8/Ye9hw1SFXn+odPhZcISZyErFloPZLATI6VMjwzPps=",
+        "lastModified": 1768491252,
+        "narHash": "sha256-ZlIPlKCYXwQJsw9WYVeyCapF5Y8JZL2Hctf22+IbHqo=",
         "owner": "cachix",
         "repo": "nix",
-        "rev": "4cbf6a9e07dc2eb035865cde51e74217862573a1",
+        "rev": "9f0da1cd90b271569752a4c83f3ff700b8fcbe12",
         "type": "github"
       },
       "original": {
@@ -280,7 +280,28 @@
       "inputs": {
         "devenv": "devenv",
         "disko": "disko",
-        "nixpkgs": "nixpkgs_2"
+        "nixpkgs": "nixpkgs_2",
+        "sops-nix": "sops-nix"
+      }
+    },
+    "sops-nix": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1768481291,
+        "narHash": "sha256-NjKtkJraCZEnLHAJxLTI+BfdU//9coAz9p5TqveZwPU=",
+        "owner": "Mic92",
+        "repo": "sops-nix",
+        "rev": "e085e303dfcce21adcb5fec535d65aacb066f101",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Mic92",
+        "repo": "sops-nix",
+        "type": "github"
       }
     },
     "treefmt-nix": {

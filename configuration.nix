@@ -12,6 +12,10 @@ in
 {
   # Basic system configuration
   system.stateVersion = "24.05";
+  boot.loader.grub = {
+    efiSupport = true;
+    efiInstallAsRemovable = true;
+  };
 
   # Networking
   networking = {

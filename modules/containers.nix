@@ -11,10 +11,14 @@ let
 in
 {
   imports = [
-    ./whoami.nix
-    ./wordpress.nix
+    ./whoami
+    ./wordpress
   ];
   _module.args = { inherit mkAddr; };
+  sops = {
+    defaultSopsFormat = "yaml";
+    age.keyFile = "/var/lib/sops-nix/age-key.txt";
+  };
 
   # --- GLOBAL SETTINGS ---
   services.caddy = {

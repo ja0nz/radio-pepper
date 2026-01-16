@@ -2,6 +2,7 @@
   pkgs,
   lib,
   mkAddr,
+  config,
   ...
 }:
 
@@ -22,6 +23,7 @@ let
       internal = "wordpress-net"; # Talk to DB
     };
     domain = "two.local";
+    sopsFile = ./secrets.enc.yaml;
   };
 
   # Shared container security profile
@@ -47,6 +49,13 @@ in
     '';
   };
 
+  sops.secrets."wp_db_password" = {
+    inherit (cfg) sopsFile;
+  };
+  sops.secrets."wp_root_password" = {
+    inherit (cfg) sopsFile;
+  };
+
   virtualisation.oci-containers.containers = {
     wordpress = commonOpts // {
       image = cfg.wp.image;
@@ -54,7 +63,7 @@ in
       environment = {
         WORDPRESS_DB_HOST = "wordpress-db:${cfg.db.port}";
         WORDPRESS_DB_USER = "wordpress";
-        WORDPRESS_DB_PASSWORD = "wordpress";
+        WORDPRESS_DB_PASSWORD = config.sops.secrets."wp_db_password".path;
         WORDPRESS_DB_NAME = "wordpress";
       };
       dependsOn = [ "wordpress-db" ];
@@ -68,10 +77,10 @@ in
     wordpress-db = commonOpts // {
       image = cfg.db.image;
       environment = {
-        MYSQL_ROOT_PASSWORD = "rootpassword";
+        MYSQL_ROOT_PASSWORD = config.sops.secrets."wp_root_password".path;
         MYSQL_DATABASE = "wordpress";
         MYSQL_USER = "wordpress";
-        MYSQL_PASSWORD = "wordpress";
+        MYSQL_PASSWORD = config.sops.secrets."wp_db_password".path;
       };
       volumes = [ "wordpress-db-data:/var/lib/mysql" ];
       networks = [ cfg.networks.internal ];

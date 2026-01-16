@@ -4,14 +4,10 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     devenv.url = "github:cachix/devenv";
-    disko = {
-      url = "github:nix-community/disko";
-      inputs = {
-        nixpkgs = {
-          follows = "nixpkgs";
-        };
-      };
-    };
+    disko.url = "github:nix-community/disko";
+    disko.inputs.nixpkgs.follows = "nixpkgs";
+    sops-nix.url = "github:Mic92/sops-nix";
+    sops-nix.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs =
@@ -23,6 +19,7 @@
       sharedModules = [
         ./configuration.nix
         ./modules/containers.nix
+        inputs.sops-nix.nixosModules.sops
       ];
 
       mkConfig =

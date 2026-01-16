@@ -10,7 +10,7 @@ cleanup() {
 }
 trap cleanup EXIT
 
-# Create SSH directory structure in temp location
+# --- 1. Create SSH directory structure in temp location ---
 install -d -m755 "$temp_dir/etc/ssh"
 
 # Extract Private Key
@@ -22,6 +22,14 @@ chmod 600 "$temp_dir/etc/ssh/ssh_host_ed25519_key"
 sops -d --extract '["ssh_host_ed25519_key_pub"]' "$MISE_PROJECT_ROOT/secrets/ssh_host_keys.enc.yaml" \
     > "$temp_dir/etc/ssh/ssh_host_ed25519_key.pub"
 chmod 644 "$temp_dir/etc/ssh/ssh_host_ed25519_key.pub"
+
+# --- 2. Age Key for SOPS ---
+# Create the directory where sops-nix expects the key
+install -d -m755 "$temp_dir/var/lib/sops-nix"
+
+# Option A: If your age key is a simple file on your host
+cp "$MISE_PROJECT_ROOT/secrets/age-key.txt" "$temp_dir/var/lib/sops-nix/age-key.txt"
+chmod 600 "$temp_dir/var/lib/sops-nix/age-key.txt"
 
 # Extracting the remote SSH key from fnox
 KEY_PATH=$(mktemp)

@@ -13,47 +13,42 @@
     "${modulesPath}/virtualisation/qemu-vm.nix"
   ];
 
-  # VM settings
   virtualisation = {
-    # Non graphic
+    # Non graphic / terminal only
     graphics = false;
-
-    # Memory for the VM
     memorySize = 2048;
+    diskSize = 10000;
 
-    # Disk size
-    diskSize = 10000; # 10GB
-
-    # Forward ports from VM to host
     forwardPorts = [
       {
         from = "host";
         host.port = 8080;
         guest.port = 80;
-      } # HTTP
+      }
       {
         from = "host";
         host.port = 8443;
         guest.port = 443;
-      } # HTTPS
+      }
       {
         from = "host";
         host.port = 2222;
         guest.port = sshPort;
-      } # SSH
+      }
     ];
+
+    # Injects the age-key.txt into the guest's filesystem
+    vmVariant = {
+      systemd.tmpfiles.rules = [
+        "d /var/lib/sops-nix 0755 root root -"
+        "f /var/lib/sops-nix/age-key.txt 0600 root root - ${builtins.readFile ./secrets/age-key.txt}"
+      ];
+    };
   };
 
-  boot = {
-    loader.grub = {
-      # enable = true;
-      efiSupport = true;
-      efiInstallAsRemovable = true;
-    };
-    kernelParams = [
-      "console=ttyS0"
-    ];
-  };
+  boot.kernelParams = [
+    "console=ttyS0"
+  ];
 
   # Disable login
   systemd.services."serial-getty@ttyS0".enable = false;
