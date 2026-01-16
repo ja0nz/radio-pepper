@@ -2,9 +2,10 @@
 USER = "radio" # TODO This value is set here and in configuration.nix
 SSH_PORT = "22" # TODO This value is set here and in flake.nix
 REMOTE_IP4 = "91.98.131.171"
+SSH_LOGIN = "$MISE_PROJECT_ROOT/secrets/ssh_private_keys.enc.yaml"
 
 SOPS_AGE_KEY_FILE="{{config_root}}/secrets/age-key.txt"
-_.source = "mise-tasks/get_fnox_age_key"
+
 
 [tools]
 age = "latest"
@@ -51,7 +52,8 @@ run = '''
     KEY_PATH=$(mktemp)
     trap 'rm -f "$KEY_PATH"' EXIT
     chmod 600 "$KEY_PATH"
-    fnox get LOCAL_SSH > "$KEY_PATH"
+    sops -d --extract '["development_ssh_key"]' "$SSH_LOGIN" > "$KEY_PATH"
+    # fnox get LOCAL_SSH > "$KEY_PATH" # for mental reference if needed
 
     ssh -i "$KEY_PATH" \
         -o IdentitiesOnly=yes \
@@ -71,7 +73,8 @@ run = '''
     KEY_PATH=$(mktemp)
     trap 'rm -f "$KEY_PATH"' EXIT
     chmod 600 "$KEY_PATH"
-    fnox get REMOTE_SSH > "$KEY_PATH"
+    sops -d --extract '["production_ssh_key"]' "$SSH_LOGIN" > "$KEY_PATH"
+    # fnox get REMOTE_SSH > "$KEY_PATH" # for mental reference if needed
 
     ssh -i "$KEY_PATH" \
         -o IdentitiesOnly=yes \

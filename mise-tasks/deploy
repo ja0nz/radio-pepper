@@ -31,11 +31,11 @@ install -d -m755 "$temp_dir/var/lib/sops-nix"
 cp "$MISE_PROJECT_ROOT/secrets/age-key.txt" "$temp_dir/var/lib/sops-nix/age-key.txt"
 chmod 600 "$temp_dir/var/lib/sops-nix/age-key.txt"
 
-# Extracting the remote SSH key from fnox
+# Extracting the remote SSH key with sops
 KEY_PATH=$(mktemp)
 trap 'rm -f "$KEY_PATH"' EXIT
 chmod 600 "$KEY_PATH"
-fnox get REMOTE_SSH > "$KEY_PATH"
+sops -d --extract '["production_ssh_key"]' "$SSH_LOGIN" > "$KEY_PATH"
 
 # === Detect server state: Custom NixOS vs Fresh Hetzner instance ===
 echo "🔍 Checking connectivity to $REMOTE_IP4..."
