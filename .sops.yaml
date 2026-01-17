@@ -1,16 +1,23 @@
 # .sops.yaml
 keys:
   - &admin_key age1g4qqkd4l55kl2q8x85d78dm84fgazv5nns6n3fw7zw6lp8m9k9wsc6w70d
+  - &ja0nz_key age1rd2zs5c8mxhgdmjs2jsy8hu9sj6kdplmp0mzv3lm6a5j0rpx8sqqut4qum
 
 creation_rules:
-  # 1. Matches any yaml file inside a 'secrets' folder
-  - path_regex: secrets/.*\.yaml$
+  # 1. Matches any .enc.yaml file inside a 'secrets' folder
+  - path_regex: secrets/.*\.enc\.yaml$
     key_groups:
       - age:
           - *admin_key
 
-  # 2. Matches any 'secrets.yaml' file inside any subfolder
+  # 2. Matches any 'secrets.enc.yaml' file inside any subfolder
   - path_regex: .*/secrets\.yaml$
     key_groups:
       - age:
           - *admin_key
+
+  # 3. Match the admin key
+  - path_regex: secrets/age-key.txt$
+    key_groups:
+      - age:
+          - *ja0nz_key
