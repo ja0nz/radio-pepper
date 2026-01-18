@@ -2,12 +2,13 @@
   config,
   pkgs,
   lib,
+  ENV,
   ...
 }:
 
 let
   # Caddy helper
-  mkAddr = addr: if lib.hasSuffix ".local" addr then "http://${addr}" else addr;
+  mkAddr = addr: if ENV == "development" then "http://${addr}" else addr;
   port = {
     tinyauth = "3000";
     whoami = "8081";

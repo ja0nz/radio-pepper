@@ -25,18 +25,23 @@
       mkConfig =
         {
           extraModules ? [ ],
+          extraArgs ? [ ],
         }:
         nixpkgs.lib.nixosSystem {
           inherit system;
           specialArgs = {
             sshPort = 22;
-          };
+          }
+          // extraArgs;
           modules = sharedModules ++ extraModules;
         };
     in
     {
       nixosConfigurations.dev-local = mkConfig {
         extraModules = [ ./local-vm.nix ];
+        extraArgs = {
+          ENV = "development";
+        };
       };
 
       nixosConfigurations.prod-remote = mkConfig {
@@ -44,6 +49,9 @@
           ./modules/hetzner/hardware-configuration.nix
           inputs.disko.nixosModules.disko
         ];
+        extraArgs = {
+          ENV = "production";
+        };
       };
 
       formatter.x86_64-linux = nixpkgs.legacyPackages.${system}.nixfmt-tree;

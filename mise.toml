@@ -81,6 +81,19 @@ run = '''
         $USER@$REMOTE_IP4 -p $SSH_PORT
 '''
 
+[tasks.mount_hosts]
+description = "Mount /etc/hosts entries for testing"
+run = '''
+    cat /etc/hosts > /tmp/hosts.merged
+    echo "" >> /tmp/hosts.merged
+    cat ./dev.hosts >> /tmp/hosts.merged
+    sudo mount --bind /tmp/hosts.merged /etc/hosts
+'''
+
+[tasks.unmount_hosts]
+description = "Restore /ets/hosts"
+run = "sudo umount /etc/hosts"
+
 [hooks]
 enter = '''
     echo "🌥️  Radio Pepper"

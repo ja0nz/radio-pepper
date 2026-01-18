@@ -9,7 +9,7 @@
 let
   # --- CONFIG BLOCK ---
   cfg = {
-    image = "traefik/whoami:latest";
+    image = "docker.io/traefik/whoami:latest";
     containerPort = "3993";
     hostPort = port.whoami;
     network = "podman";
