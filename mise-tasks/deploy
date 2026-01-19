@@ -34,7 +34,7 @@ chmod 600 "$temp_dir/persist/var/lib/sops-nix/age-key.txt"
 KEY_PATH=$(mktemp)
 trap 'rm -f "$KEY_PATH"' EXIT
 chmod 600 "$KEY_PATH"
-sops -d --extract '["production_ssh_key"]' "$SSH_LOGIN" > "$KEY_PATH"
+echo "$PROD_SSH_KEY" > "$KEY_PATH"
 
 # === Detect server state: Custom NixOS vs Fresh Hetzner instance ===
 echo "🔍 Checking connectivity to $REMOTE_IP4..."
