@@ -49,8 +49,8 @@
         extraModules = [
           ./modules/hetzner/hardware-configuration.nix
           inputs.disko.nixosModules.disko
-          # ./modules/hetzner/impermanence.nix
-          # inputs.impermanence.nixosModules.impermanence
+          ./modules/hetzner/impermanence.nix
+          inputs.impermanence.nixosModules.impermanence
         ];
         extraArgs = {
           ENV = "production";

@@ -11,25 +11,24 @@ cleanup() {
 trap cleanup EXIT
 
 # --- 1. Create SSH directory structure in temp location ---
-install -d -m755 "$temp_dir/etc/ssh"
+install -d -m755 "$temp_dir/persist/etc/ssh"
 
 # Extract Private Key
 sops -d --extract '["ssh_host_ed25519_key"]' "$MISE_PROJECT_ROOT/secrets/ssh_host_keys.enc.yaml" \
-    > "$temp_dir/etc/ssh/ssh_host_ed25519_key"
-chmod 600 "$temp_dir/etc/ssh/ssh_host_ed25519_key"
+    > "$temp_dir/persist/etc/ssh/ssh_host_ed25519_key"
+chmod 600 "$temp_dir/persist/etc/ssh/ssh_host_ed25519_key"
 
 # Extract Public Key
 sops -d --extract '["ssh_host_ed25519_key_pub"]' "$MISE_PROJECT_ROOT/secrets/ssh_host_keys.enc.yaml" \
-    > "$temp_dir/etc/ssh/ssh_host_ed25519_key.pub"
-chmod 644 "$temp_dir/etc/ssh/ssh_host_ed25519_key.pub"
+    > "$temp_dir/persist/etc/ssh/ssh_host_ed25519_key.pub"
+chmod 644 "$temp_dir/persist/etc/ssh/ssh_host_ed25519_key.pub"
 
 # --- 2. Age Key for SOPS ---
 # Create the directory where sops-nix expects the key
-install -d -m755 "$temp_dir/var/lib/sops-nix"
+install -d -m755 "$temp_dir/persist/var/lib/sops-nix"
 
-# Option A: If your age key is a simple file on your host
-cp "$MISE_PROJECT_ROOT/secrets/age-key.txt" "$temp_dir/var/lib/sops-nix/age-key.txt"
-chmod 600 "$temp_dir/var/lib/sops-nix/age-key.txt"
+cp "$MISE_PROJECT_ROOT/secrets/age-key.txt" "$temp_dir/persist/var/lib/sops-nix/age-key.txt"
+chmod 600 "$temp_dir/persist/var/lib/sops-nix/age-key.txt"
 
 # Extracting the remote SSH key with sops
 KEY_PATH=$(mktemp)

@@ -21,6 +21,14 @@
       device = "nodev";
     };
     initrd.postDeviceCommands = lib.mkAfter ''
+      # Verify pool is imported
+      if ! zpool list zroot >/dev/null 2>&1; then
+        echo "Importing zroot pool..."
+        zpool import -f zroot
+      fi
+
+      # Rollback to blank snapshot
+      echo "Rolling back root to blank state..."
       zfs rollback -r zroot/local/root@blank
     '';
   };
@@ -92,6 +100,7 @@
     uid = 1000;
     linger = true;
     description = "Container User";
+    password = "123";
     extraGroups = [
       "podman"
       "wheel"
