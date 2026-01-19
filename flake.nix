@@ -3,7 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    devenv.url = "github:cachix/devenv";
+    impermanence.url = "github:nix-community/impermanence";
     disko.url = "github:nix-community/disko";
     disko.inputs.nixpkgs.follows = "nixpkgs";
     sops-nix.url = "github:Mic92/sops-nix";
@@ -31,6 +31,7 @@
           inherit system;
           specialArgs = {
             sshPort = 22;
+            userName = "radio";
           }
           // extraArgs;
           modules = sharedModules ++ extraModules;
@@ -48,6 +49,8 @@
         extraModules = [
           ./modules/hetzner/hardware-configuration.nix
           inputs.disko.nixosModules.disko
+          # ./modules/hetzner/impermanence.nix
+          # inputs.impermanence.nixosModules.impermanence
         ];
         extraArgs = {
           ENV = "production";
@@ -56,10 +59,13 @@
 
       formatter.x86_64-linux = nixpkgs.legacyPackages.${system}.nixfmt-tree;
 
-      # Development environment
-      devShells.${system}.default = inputs.devenv.lib.mkShell {
-        inherit pkgs;
-        modules = [ ./devenv.nix ];
+      devShells.${system}.default = pkgs.mkShell {
+        buildInputs = [
+          pkgs.mise
+        ];
+        shellHook = ''
+          echo "Mise environment active"
+        '';
       };
     };
 }

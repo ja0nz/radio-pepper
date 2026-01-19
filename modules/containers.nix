@@ -13,6 +13,7 @@ let
     tinyauth = "3000";
     whoami = "8081";
     wordpress = "8082";
+    azurecast = "8083";
   };
 in
 {
@@ -20,6 +21,7 @@ in
     ./whoami
     ./tinyauth
     # ./wordpress
+    # ./azurecast
   ];
   _module.args = { inherit mkAddr port; };
   sops = {

@@ -3,23 +3,41 @@
   pkgs,
   lib,
   sshPort,
+  userName,
   ...
 }:
 
-let
-  username = "radio";
-in
 {
   # Basic system configuration
   system.stateVersion = "24.05";
-  boot.loader.grub = {
-    efiSupport = true;
-    efiInstallAsRemovable = true;
+  disko.devices.disk.main.device = "/dev/sda";
+  boot = {
+    supportedFilesystems = [ "zfs" ];
+    loader.efi.canTouchEfiVariables = true;
+    loader.grub = {
+      enable = true;
+      zfsSupport = true;
+      efiSupport = true;
+      device = "nodev";
+    };
+    initrd.postDeviceCommands = lib.mkAfter ''
+      zfs rollback -r zroot/local/root@blank
+    '';
   };
+  nix = {
+    settings.auto-optimise-store = true;
+    gc = {
+      automatic = true;
+      dates = "weekly";
+      options = "--delete-older-than 30d";
+    };
+  };
+  services.zfs.autoSnapshot.enable = true;
 
   # Networking
   networking = {
     hostName = "pepper";
+    hostId = "dbb1698a";
     firewall = {
       enable = true;
       trustedInterfaces = [ "podman1" ];
@@ -69,7 +87,7 @@ in
   };
 
   # User for running containers
-  users.users.${username} = {
+  users.users.${userName} = {
     isNormalUser = true;
     uid = 1000;
     linger = true;
@@ -86,7 +104,7 @@ in
 
   security.sudo.extraRules = [
     {
-      users = [ "${username}" ];
+      users = [ "${userName}" ];
       commands = [
         {
           command = "ALL";
