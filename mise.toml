@@ -1,5 +1,5 @@
 [env]
-USER = "radio" # TODO This value is set here and in configuration.nix
+USER = "radio" # TODO This value is set here and in flake.nix
 SSH_PORT = "22" # TODO This value is set here and in flake.nix
 
 # HETZNER_SERVER_NAME = "radio-pepper"
