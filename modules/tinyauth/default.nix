@@ -35,7 +35,6 @@ in
     networks = [ cfg.network ];
     autoStart = true;
     extraOptions = [
-      "--cap-drop=ALL"
       "--security-opt=no-new-privileges"
     ];
   };

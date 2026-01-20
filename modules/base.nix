@@ -1,47 +1,10 @@
 {
-  config,
-  pkgs,
-  lib,
   sshPort,
   userName,
   ...
 }:
 
 {
-  # Basic system configuration
-  system.stateVersion = "24.05";
-  disko.devices.disk.main.device = "/dev/sda";
-  boot = {
-    supportedFilesystems = [ "zfs" ];
-    loader.efi.canTouchEfiVariables = true;
-    loader.grub = {
-      enable = true;
-      zfsSupport = true;
-      efiSupport = true;
-      device = "nodev";
-    };
-    initrd.postDeviceCommands = lib.mkAfter ''
-      # Verify pool is imported
-      if ! zpool list zroot >/dev/null 2>&1; then
-        echo "Importing zroot pool..."
-        zpool import -f zroot
-      fi
-
-      # Rollback to blank snapshot
-      echo "Rolling back root to blank state..."
-      zfs rollback -r zroot/local/root@blank
-    '';
-  };
-  nix = {
-    settings.auto-optimise-store = true;
-    gc = {
-      automatic = true;
-      dates = "weekly";
-      options = "--delete-older-than 30d";
-    };
-  };
-  services.zfs.autoSnapshot.enable = true;
-
   # Networking
   networking = {
     hostName = "pepper";
@@ -90,7 +53,7 @@
     jcb = "journalctl -b";
     jcu = "journalctl -u";
     p = "sudo podman";
-    pr = "sudo podman run -ti";
+    pr = "sudo podman exec -ti";
     ".." = "cd ..";
   };
 
@@ -100,14 +63,13 @@
     uid = 1000;
     linger = true;
     description = "Container User";
-    password = "123";
     extraGroups = [
       "podman"
       "wheel"
     ];
     openssh.authorizedKeys.keys = [
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKVYORHTB+a29UzmlZNFU9UkEvIHhBZKzDgiof8Q4xkO remote-radio-pepper-key"
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIONWYt7n5qJC99fRPLxCcgzfB46qfAKXm3F+sgvbeT03 local-radio-pepper-key"
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEaSLRKnMbzk0OtGKEclUyUZytRdUL/CjZaFup5xcgoL production"
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKqGxrOa157jODZxdEH9RBclmSE8YmwO40S5owCAtDKU development"
     ];
   };
 

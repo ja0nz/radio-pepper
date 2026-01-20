@@ -11,7 +11,6 @@
   environment.persistence."/persist" = {
     directories = [
       "/var/log"
-      "/var/lib/sops-nix" # CRITICAL key needed on server
       "/var/lib/nixos" # CRITICAL for User/Group ID consistency
       "/var/lib/systemd" # Keeps timers and back-end state
       "/var/lib/containers" # Your Podman images and volumes

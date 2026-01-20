@@ -14,29 +14,25 @@ trap cleanup EXIT
 install -d -m755 "$temp_dir/persist/etc/ssh"
 
 # Extract Private Key
-sops -d --extract '["ssh_host_ed25519_key"]' "$MISE_PROJECT_ROOT/secrets/ssh_host_keys.enc.yaml" \
+sops -d --extract '["ssh_host_ed25519_key"]' "$MISE_PROJECT_ROOT/secrets/prod.enc.yaml" \
     > "$temp_dir/persist/etc/ssh/ssh_host_ed25519_key"
 chmod 600 "$temp_dir/persist/etc/ssh/ssh_host_ed25519_key"
 
 # Extract Public Key
-sops -d --extract '["ssh_host_ed25519_key_pub"]' "$MISE_PROJECT_ROOT/secrets/ssh_host_keys.enc.yaml" \
+sops -d --extract '["ssh_host_ed25519_key_pub"]' "$MISE_PROJECT_ROOT/secrets/prod.enc.yaml" \
     > "$temp_dir/persist/etc/ssh/ssh_host_ed25519_key.pub"
 chmod 644 "$temp_dir/persist/etc/ssh/ssh_host_ed25519_key.pub"
-
-# --- 2. Age Key for SOPS ---
-# Create the directory where sops-nix expects the key
-install -d -m755 "$temp_dir/persist/var/lib/sops-nix"
-
-cp "$MISE_PROJECT_ROOT/secrets/age-key.txt" "$temp_dir/persist/var/lib/sops-nix/age-key.txt"
-chmod 600 "$temp_dir/persist/var/lib/sops-nix/age-key.txt"
 
 # Extracting the remote SSH key with sops
 KEY_PATH=$(mktemp)
 trap 'rm -f "$KEY_PATH"' EXIT
 chmod 600 "$KEY_PATH"
-echo "$PROD_SSH_KEY" > "$KEY_PATH"
+sops -d --extract '["id_ed25519"]' "$MISE_PROJECT_ROOT/secrets/prod.enc.yaml" \
+    > "$KEY_PATH"
 
 # === Detect server state: Custom NixOS vs Fresh Hetzner instance ===
+export HCLOUD_TOKEN=$(sops -d --extract '["hetzner_api_token"]' "$MISE_PROJECT_ROOT/secrets/prod.enc.yaml")
+REMOTE_IP4=$(hcloud server ip "$HETZNER_SERVER_NAME")
 echo "🔍 Checking connectivity to $REMOTE_IP4..."
 
 # Try connecting on custom SSH port to see if NixOS is already installed

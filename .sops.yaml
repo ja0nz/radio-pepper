@@ -1,23 +1,24 @@
 # .sops.yaml
+# Prod Key -> will be pushed remote
 keys:
-  - &admin_key age1g4qqkd4l55kl2q8x85d78dm84fgazv5nns6n3fw7zw6lp8m9k9wsc6w70d
-  - &ja0nz_key age1rd2zs5c8mxhgdmjs2jsy8hu9sj6kdplmp0mzv3lm6a5j0rpx8sqqut4qum
+  - &prod_key age1kfqxq9udhyd5ccnegtev7tldsxcahjk5azr9e52y4x2z68cw9a4qz2q068
+  - &dev_key age1hrjqylz8ekj3x39vgzg8zmzz7s3v24gau0rasvxus0mg48etxgws3egq6p
+  - &ja0nz_key age186szpazmh9k0h2pyeuuzpzs4mdpd4rpucx9df3csaz7f5l6n2e3q8p8xaq
 
 creation_rules:
-  # 1. Matches any .enc.yaml file inside a 'secrets' folder
-  - path_regex: secrets/.*\.enc\.yaml$
+  - path_regex: secrets/prod.enc.yaml$
     key_groups:
       - age:
-          - *admin_key
+          - *prod_key
+          - *ja0nz_key
 
-  # 2. Matches any 'secrets.enc.yaml' file inside any subfolder
-  - path_regex: .*/secrets\.yaml$
+  - path_regex: secrets/dev/dev.enc.yaml$
     key_groups:
       - age:
-          - *admin_key
+          - *dev_key
+          - *ja0nz_key
 
-  # 3. Match the admin key
-  - path_regex: secrets/age-key.txt$
+  - path_regex: secrets/prod.keys.txt$
     key_groups:
       - age:
           - *ja0nz_key

@@ -24,20 +24,12 @@ let
       internal = "wordpress-net"; # Talk to DB
     };
     domain = "wp.radiopepper.website";
-    sopsFile = ./secrets.enc.yaml;
   };
 
   # Shared container security profile
   commonOpts = {
     autoStart = true;
     extraOptions = [
-      "--cap-drop=ALL"
-      "--cap-add=CHOWN"
-      "--cap-add=SETUID"
-      "--cap-add=SETGID"
-      "--cap-add=FOWNER"
-      "--cap-add=DAC_OVERRIDE"
-      "--cap-add=NET_BIND_SERVICE"
       "--security-opt=no-new-privileges"
     ];
   };
@@ -45,28 +37,37 @@ in
 {
   services.caddy.virtualHosts."${mkAddr cfg.domain}" = {
     extraConfig = ''
-      import tinyauth_forwarder
+      # import tinyauth_forwarder
       reverse_proxy localhost:${cfg.wp.hostPort}
     '';
   };
 
-  sops.secrets."wp_db_password" = {
-    inherit (cfg) sopsFile;
+  sops.secrets."wordpress_db_password" = { };
+  sops.secrets."wordpress_root_password" = { };
+  sops.templates."mariaDB.env" = {
+    content = ''
+      MYSQL_ROOT_PASSWORD="${config.sops.placeholder."wordpress_root_password"}";
+      MYSQL_DATABASE="wordpress";
+      MYSQL_USER="wordpress";
+      MYSQL_PASSWORD="${config.sops.placeholder."wordpress_db_password"}";
+    '';
   };
-  sops.secrets."wp_root_password" = {
-    inherit (cfg) sopsFile;
+  sops.templates."wordpress.env" = {
+    content = ''
+      WORDPRESS_DB_NAME="wordpress";
+      WORDPRESS_DB_USER="wordpress";
+      WORDPRESS_DB_HOST="wordpress-db:${cfg.db.port}";
+      WORDPRESS_DB_PASSWORD="${config.sops.placeholder."wordpress_db_password"}";
+    '';
   };
 
   virtualisation.oci-containers.containers = {
     wordpress = commonOpts // {
       image = cfg.wp.image;
       ports = [ "${cfg.wp.hostPort}:${cfg.wp.containerPort}" ];
-      environment = {
-        WORDPRESS_DB_HOST = "wordpress-db:${cfg.db.port}";
-        WORDPRESS_DB_USER = "wordpress";
-        WORDPRESS_DB_PASSWORD = config.sops.secrets."wp_db_password".path;
-        WORDPRESS_DB_NAME = "wordpress";
-      };
+      environmentFiles = [
+        config.sops.templates."wordpress.env".path
+      ];
       dependsOn = [ "wordpress-db" ];
       volumes = [ "wordpress-data:/var/www/html" ];
       networks = [
@@ -77,12 +78,9 @@ in
 
     wordpress-db = commonOpts // {
       image = cfg.db.image;
-      environment = {
-        MYSQL_ROOT_PASSWORD = config.sops.secrets."wp_root_password".path;
-        MYSQL_DATABASE = "wordpress";
-        MYSQL_USER = "wordpress";
-        MYSQL_PASSWORD = config.sops.secrets."wp_db_password".path;
-      };
+      environmentFiles = [
+        config.sops.templates."mariaDB.env".path
+      ];
       volumes = [ "wordpress-db-data:/var/lib/mysql" ];
       networks = [ cfg.networks.internal ];
     };

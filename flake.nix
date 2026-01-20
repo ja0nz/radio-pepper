@@ -11,13 +11,17 @@
   };
 
   outputs =
-    inputs@{ self, nixpkgs, ... }:
+    inputs@{
+      self,
+      nixpkgs,
+      ...
+    }:
     let
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
 
       sharedModules = [
-        ./configuration.nix
+        ./modules/base.nix
         ./modules/containers.nix
         inputs.sops-nix.nixosModules.sops
       ];
@@ -39,7 +43,9 @@
     in
     {
       nixosConfigurations.dev-local = mkConfig {
-        extraModules = [ ./local-vm.nix ];
+        extraModules = [
+          ./modules/vm-configuration.nix
+        ];
         extraArgs = {
           ENV = "development";
         };
@@ -47,9 +53,11 @@
 
       nixosConfigurations.prod-remote = mkConfig {
         extraModules = [
+          ./modules/vps-configuration.nix
           ./modules/hetzner/hardware-configuration.nix
-          inputs.disko.nixosModules.disko
+          ./modules/ddclient.nix
           ./modules/hetzner/impermanence.nix
+          inputs.disko.nixosModules.disko
           inputs.impermanence.nixosModules.impermanence
         ];
         extraArgs = {

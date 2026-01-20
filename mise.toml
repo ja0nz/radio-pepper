@@ -2,9 +2,7 @@
 USER = "radio" # TODO This value is set here and in flake.nix
 SSH_PORT = "22" # TODO This value is set here and in flake.nix
 
-# HETZNER_SERVER_NAME = "radio-pepper"
-HETZNER_SERVER_NAME = "ubuntu-4gb-nbg1-1"
-SOPS_AGE_KEY_FILE="{{config_root}}/secrets/age-key.txt"
+HETZNER_SERVER_NAME = "radio-pepper"
 _.source = { path = "./mise-tasks/load_secrets", tools = true }
 
 
@@ -53,10 +51,10 @@ run = '''
     KEY_PATH=$(mktemp)
     trap 'rm -f "$KEY_PATH"' EXIT
     chmod 600 "$KEY_PATH"
-    echo "$DEV_SSH_KEY" > "$KEY_PATH"
+    cat ./secrets/dev/ssh_host_ed25519_key > "$KEY_PATH"
     # fnox get LOCAL_SSH > "$KEY_PATH" # for mental reference if needed
 
-    ssh -i "$KEY_PATH" \
+    ssh -i ./secrets/dev/ssh_host_ed25519_key \
         -o IdentitiesOnly=yes \
         -o UserKnownHostsFile=/dev/null \
         -o StrictHostKeyChecking=no \
@@ -67,34 +65,28 @@ run = '''
 description = "Connect to remote VM"
 run = '''
     # Connect SSH on port $SSH_PORT...
-    echo $HCLOUD_TOKEN
+
+    export HCLOUD_TOKEN=$(sops -d --extract '["hetzner_api_token"]' "./secrets/prod.enc.yaml")
+    # Check if the variable is empty
+    if [ -z "$HCLOUD_TOKEN" ]; then
+        echo "❌ Error: HCLOUD_TOKEN is not set."
+        echo "💡 Hint: Ensure you can access prod.enc.yaml for the token."
+        exit 1
+    fi
 
     echo "waiting for remote VM to accept connections..."
     REMOTE_IP4=$(hcloud server ip "$HETZNER_SERVER_NAME")
     until nc -z $REMOTE_IP4 $SSH_PORT; do sleep 1; done
-    # fnox get REMOTE_SSH > "$KEY_PATH" # for mental reference if needed
 
     KEY_PATH=$(mktemp)
     trap 'rm -f "$KEY_PATH"' EXIT
     chmod 600 "$KEY_PATH"
-    echo "$PROD_SSH_KEY" > "$KEY_PATH"
+    sops -d --extract '["id_ed25519"]' "$MISE_PROJECT_ROOT/secrets/prod.enc.yaml" \
+        > "$KEY_PATH"
     ssh -i "$KEY_PATH" \
         -o IdentitiesOnly=yes \
         $USER@$REMOTE_IP4 -p $SSH_PORT
 '''
-
-[tasks.mount_hosts]
-description = "Mount /etc/hosts entries for testing"
-run = '''
-    cat /etc/hosts > /tmp/hosts.merged
-    echo "" >> /tmp/hosts.merged
-    cat ./dev.hosts >> /tmp/hosts.merged
-    sudo mount --bind /tmp/hosts.merged /etc/hosts
-'''
-
-[tasks.unmount_hosts]
-description = "Restore /ets/hosts"
-run = "sudo umount /etc/hosts"
 
 [hooks]
 enter = '''

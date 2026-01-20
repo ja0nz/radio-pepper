@@ -3,6 +3,7 @@
   lib,
   mkAddr,
   port,
+  config,
   ...
 }:
 
@@ -19,7 +20,6 @@ in
 {
   services.caddy.virtualHosts."${mkAddr cfg.domain}" = {
     extraConfig = ''
-      import tinyauth_forwarder
       reverse_proxy localhost:${cfg.hostPort}
     '';
   };
@@ -29,7 +29,6 @@ in
     ports = [ "${cfg.hostPort}:${cfg.containerPort}" ];
     environment.WHOAMI_PORT_NUMBER = cfg.containerPort;
     networks = [ cfg.network ];
-    autoStart = true;
     extraOptions = [
       "--cap-drop=ALL"
       "--security-opt=no-new-privileges"

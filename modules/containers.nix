@@ -20,14 +20,10 @@ in
   imports = [
     ./whoami
     ./tinyauth
-    # ./wordpress
+    ./wordpress
     # ./azurecast
   ];
   _module.args = { inherit mkAddr port; };
-  sops = {
-    defaultSopsFormat = "yaml";
-    age.keyFile = "/var/lib/sops-nix/age-key.txt";
-  };
 
   # --- GLOBAL SETTINGS ---
   services.caddy = {
@@ -54,7 +50,6 @@ in
   # --- GLOBAL NETWORK ---
   systemd.services.create-default-network = {
     serviceConfig.Type = "oneshot";
-    after = [ "network-online.target" ];
     wantedBy = [ "multi-user.target" ];
     script = ''
       ${pkgs.podman}/bin/podman network exists podman || \

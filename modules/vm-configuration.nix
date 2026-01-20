@@ -12,6 +12,24 @@
   imports = [
     "${modulesPath}/virtualisation/qemu-vm.nix"
   ];
+  system.stateVersion = "24.05";
+
+  # SOPS-NIX
+  sops = {
+    defaultSopsFormat = "yaml";
+    defaultSopsFile = ../secrets/dev/dev.enc.yaml;
+    age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
+  };
+
+  environment.etc."ssh/ssh_host_ed25519_key" = {
+    source = ../secrets/dev/ssh_host_ed25519_key;
+    mode = "0600";
+  };
+
+  environment.etc."ssh/ssh_host_ed25519_key.pub" = {
+    source = ../secrets/dev/ssh_host_ed25519_key.pub;
+    mode = "0644";
+  };
 
   virtualisation = {
     # Non graphic / terminal only
@@ -36,14 +54,6 @@
         guest.port = sshPort;
       }
     ];
-
-    # Injects the age-key.txt into the guest's filesystem
-    vmVariant = {
-      systemd.tmpfiles.rules = [
-        "d /var/lib/sops-nix 0755 root root -"
-        "f /var/lib/sops-nix/age-key.txt 0600 root root - ${builtins.readFile ./secrets/age-key.txt}"
-      ];
-    };
   };
 
   boot.kernelParams = [
