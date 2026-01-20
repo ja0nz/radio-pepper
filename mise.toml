@@ -3,7 +3,7 @@ USER = "radio" # TODO This value is set here and in flake.nix
 SSH_PORT = "22" # TODO This value is set here and in flake.nix
 
 HETZNER_SERVER_NAME = "radio-pepper"
-_.source = { path = "./mise-tasks/load_secrets", tools = true }
+# _.source = { path = "./mise-tasks/load_secrets", tools = true }
 
 
 [tools]
@@ -17,7 +17,7 @@ sops = "latest"
 #prod-ssh = "mise r prod-ssh"
 
 [tasks.vm-start]
-description = "Start the local development qemu vm"
+description = "Start the local development vm at localhost:8080"
 run = '''
     # 🚀 Starting local VM...
     echo "This will start a NixOS VM with your configuration"
@@ -31,7 +31,7 @@ run = '''
 '''
 
 [tasks.vm-build]
-description = "Build a local qemu vm"
+description = "Build a local qemu vm to ./build/vm"
 run = '''
     # Building VM...
 
@@ -41,7 +41,7 @@ run = '''
 '''
 
 [tasks.dev-ssh]
-description = "Connect to local VM"
+description = "Connect to local VM on port 2222"
 run = '''
     # Connect SSH on port 2222...
 
@@ -92,19 +92,9 @@ run = '''
 enter = '''
     echo "🌥️  Radio Pepper"
     echo ""
-    echo "📍 Local development mode"
-    echo ""
     echo "Available commands:"
-    echo "  mise r vm-build      - Build the test VM"
-    echo "  mise r vm-start      - Start the test VM"
-    echo "  test-build    - Test configuration without VM"
+    mise tasks
     echo ""
-    echo "📍 Remote deployment mode"
-    echo "Server: $REMOTE_IP4"
-    echo ""
-    echo "Available commands:"
-    echo "  mise r deploy        - Deploy to remote server"
-    echo "  mise r dev-ssh       - SSH into local server"
-    echo "  mise r prod-ssh      - SSH into prodo server"
+    echo "Run them with 'mise r name'"
     echo ""
 '''
