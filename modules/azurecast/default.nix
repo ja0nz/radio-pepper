@@ -25,6 +25,7 @@ in
 
   services.caddy.virtualHosts."${mkAddr cfg.domain}" = {
     extraConfig = ''
+      import tinyauth_forwarder
       reverse_proxy localhost:${cfg.hostPort}
     '';
   };
@@ -38,11 +39,14 @@ in
     ];
     # https://www.azuracast.com/docs/getting-started/settings/
     environment = {
+      LANG = "en_US"; # maybe: de_DE
       APPLICATION_ENV = "production";
       COMPOSER_PLUGIN_MODE = "false"; # should only use it if you use one or more plugins with their own Composer dependencies.
       AUTO_ASSIGN_PORT_MIN = "8000";
       AUTO_ASSIGN_PORT_MAX = "8050";
       ENABLE_WEB_UPDATER = "false";
+      MYSQL_RANDOM_ROOT_PASSWORD = "yes";
+      MYSQL_PASSWORD = "azur4c457"; # default value, db internal only
     };
     volumes = [
       "azuracast_station_data:/var/azuracast/stations"

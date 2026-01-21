@@ -7,7 +7,7 @@
   # Networking
   networking = {
     hostName = "pepper";
-    hostId = "dbb1698a";
+    hostId = "dbb1698a"; # random; needed for zfs
     firewall = {
       enable = true;
       trustedInterfaces = [ "podman1" ];

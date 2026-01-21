@@ -54,6 +54,17 @@
         host.port = 2222;
         guest.port = vars.sshPort;
       }
+      # Azuracast
+      {
+        from = "host";
+        host.port = 2022;
+        guest.port = 2022;
+      }
+      {
+        from = "host";
+        host.port = 8000;
+        guest.port = 8000;
+      }
     ];
   };
 
