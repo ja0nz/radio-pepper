@@ -1,8 +1,17 @@
-https://www.reddit.com/r/NixOS/comments/1dis8w4/from_scratch_vm_on_hetzner_using_hcloud_utility/
+Document these:
 mise trust
 mise install
 mise doctor
 
-Interactive Testing
+
+Interactive Testing documentation
 https://nixery.dev/
 podman run -ti nixery.dev/shell/git/htop bash
+
+TODO
+Monthly Backup via
+https://search.nixos.org/options?query=services.restic
+
+Azurecast
+
+pass domain via variable
