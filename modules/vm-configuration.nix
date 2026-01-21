@@ -34,7 +34,8 @@
   virtualisation = {
     # Non graphic / terminal only
     graphics = false;
-    memorySize = 2048;
+    memorySize = 4096;
+    cores = 4;
     diskSize = 10000;
 
     forwardPorts = [

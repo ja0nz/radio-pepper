@@ -21,7 +21,7 @@ in
     ./whoami
     ./tinyauth
     ./wordpress
-    # ./azurecast
+    ./azurecast
   ];
   _module.args = { inherit mkAddr port; };
 
