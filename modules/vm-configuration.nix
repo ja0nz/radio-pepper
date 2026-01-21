@@ -3,7 +3,7 @@
   pkgs,
   modulesPath,
   lib,
-  sshPort,
+  vars,
   ...
 }:
 
@@ -51,7 +51,7 @@
       {
         from = "host";
         host.port = 2222;
-        guest.port = sshPort;
+        guest.port = vars.sshPort;
       }
     ];
   };

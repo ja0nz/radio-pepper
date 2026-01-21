@@ -4,6 +4,7 @@
   mkAddr,
   port,
   config,
+  vars,
   ...
 }:
 
@@ -23,7 +24,7 @@ let
       public = "podman"; # Talk to Caddy
       internal = "wordpress-net"; # Talk to DB
     };
-    domain = "wp.radiopepper.website";
+    domain = "wp.${vars.rootDomain}";
   };
 
   # Shared container security profile

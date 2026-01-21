@@ -2,8 +2,7 @@
   config,
   pkgs,
   lib,
-  sshPort,
-  userName,
+  vars,
   ...
 }:
 

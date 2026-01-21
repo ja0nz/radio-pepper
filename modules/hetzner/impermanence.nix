@@ -2,7 +2,7 @@
   config,
   lib,
   pkgs,
-  userName,
+  vars,
   ...
 }:
 
@@ -25,7 +25,7 @@
       "/etc/ssh/ssh_host_ed25519_key"
       "/etc/ssh/ssh_host_ed25519_key.pub"
     ];
-    users.${userName} = {
+    users.${vars.userName} = {
       files = [
         ".bash_history" # Keep command history for convenience
       ];

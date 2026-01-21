@@ -1,6 +1,5 @@
 {
-  sshPort,
-  userName,
+  vars,
   ...
 }:
 
@@ -13,7 +12,7 @@
       enable = true;
       trustedInterfaces = [ "podman1" ];
       allowedTCPPorts = [
-        sshPort
+        vars.sshPort
         80
         443
       ];
@@ -24,7 +23,7 @@
   services.openssh = {
     enable = true;
     ports = [
-      sshPort
+      vars.sshPort
     ];
     hostKeys = [
       {
@@ -58,7 +57,7 @@
   };
 
   # User for running containers
-  users.users.${userName} = {
+  users.users.${vars.userName} = {
     isNormalUser = true;
     uid = 1000;
     linger = true;
@@ -75,7 +74,7 @@
 
   security.sudo.extraRules = [
     {
-      users = [ "${userName}" ];
+      users = [ "${vars.userName}" ];
       commands = [
         {
           command = "ALL";

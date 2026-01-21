@@ -1,4 +1,9 @@
-{ pkgs, config, ... }:
+{
+  pkgs,
+  config,
+  vars,
+  ...
+}:
 
 {
   sops.secrets."dyndns_namecheap_token" = { };
@@ -11,7 +16,7 @@
     usev6 = "webv6, webv6=api6.ipify.org, webv6=icanhazip.com";
     protocol = "namecheap";
     server = "dynamicdns.park-your-domain.com";
-    username = "radiopepper.website";
+    username = "${vars.rootDomain}";
     passwordFile = config.sops.secrets."dyndns_namecheap_token".path;
     domains = [
       "@"

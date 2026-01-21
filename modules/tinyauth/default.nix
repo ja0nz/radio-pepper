@@ -3,6 +3,7 @@
   lib,
   mkAddr,
   port,
+  vars,
   ...
 }:
 
@@ -13,7 +14,7 @@ let
     containerPort = "3000";
     hostPort = port.tinyauth;
     network = "podman";
-    domain = "auth.radiopepper.website";
+    domain = "auth.${vars.rootDomain}";
   };
 in
 {

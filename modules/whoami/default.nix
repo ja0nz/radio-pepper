@@ -4,6 +4,7 @@
   mkAddr,
   port,
   config,
+  vars,
   ...
 }:
 
@@ -14,7 +15,7 @@ let
     containerPort = "3993";
     hostPort = port.whoami;
     network = "podman";
-    domain = "radiopepper.website";
+    domain = "${vars.rootDomain}";
   };
 in
 {

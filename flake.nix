@@ -34,8 +34,11 @@
         nixpkgs.lib.nixosSystem {
           inherit system;
           specialArgs = {
-            sshPort = 22;
-            userName = "radio";
+            vars = {
+              sshPort = 22;
+              userName = "radio";
+              rootDomain = "radiopepper.website";
+            };
           }
           // extraArgs;
           modules = sharedModules ++ extraModules;
