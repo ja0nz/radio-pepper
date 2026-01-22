@@ -13,7 +13,7 @@ let
     containerPort = "80";
     hostPort = port.azurecast;
     network = "podman";
-    domain = "radio.${vars.rootDomain}";
+    domain = "azura.${vars.rootDomain}";
   };
 in
 {

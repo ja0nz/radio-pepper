@@ -14,7 +14,7 @@ let
     containerPort = "3993";
     hostPort = port.whoami;
     network = "podman";
-    domain = "${vars.rootDomain}";
+    domain = "ping.${vars.rootDomain}";
   };
 in
 {

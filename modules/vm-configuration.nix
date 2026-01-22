@@ -36,7 +36,7 @@
       {
         mountPoint = "/var";
         image = "./.dev-local.img";
-        size = 3000; # 3GB -> not much needed as we use the nix store anyway
+        size = 10000; # 10GB
       }
     ];
     shares = [
