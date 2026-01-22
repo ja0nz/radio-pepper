@@ -21,7 +21,7 @@
   tunnel token.
   - caddy: Acts as the entry point for traffic coming out of the tunnel.
 */
-{ pkgs, ... }:
+{ pkgs, vars, ... }:
 
 {
   services.caddy.globalConfig = ''
@@ -29,9 +29,19 @@
     http_port 443
   '';
 
-  environment.systemPackages = [ pkgs.cloudflared ];
+  systemd.services.cloudflare-tunnel = {
+    description = "Cloudflare Tunnel: Radio Pepper";
+    after = [ "network-online.target" ];
+    wants = [ "network-online.target" ];
+    wantedBy = [ "multi-user.target" ];
 
-  # After loggin in you could run
-  # cloudflared tunnel --no-autoupdate run --token XXX
+    serviceConfig = {
+      EnvironmentFile = "/var/dev-secrets/cf-token.env";
+      ExecStart = "${pkgs.cloudflared}/bin/cloudflared tunnel --no-autoupdate run --token \${CF_TUNNEL_TOKEN}";
 
+      User = "${vars.userName}";
+      Group = "users";
+      Restart = "on-failure";
+    };
+  };
 }

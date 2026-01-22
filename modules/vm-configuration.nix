@@ -45,6 +45,14 @@
         tag = "ro-store";
         source = "/nix/store";
         mountPoint = "/nix/.ro-store";
+        readOnly = true;
+      }
+      {
+        proto = "9p";
+        tag = "dev-secrets";
+        source = "./secrets/dev";
+        mountPoint = "/var/dev-secrets";
+        readOnly = true;
       }
     ];
 

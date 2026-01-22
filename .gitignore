@@ -1,1 +1,2 @@
 .dev-local.img
+/secrets/dev/cf-token.env
