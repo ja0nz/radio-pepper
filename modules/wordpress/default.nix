@@ -1,7 +1,6 @@
 {
   pkgs,
   lib,
-  mkAddr,
   port,
   config,
   vars,
@@ -29,9 +28,9 @@ let
 
 in
 {
-  services.caddy.virtualHosts."${mkAddr cfg.domain}" = {
+  services.caddy.virtualHosts."${cfg.domain}" = {
     extraConfig = ''
-      import tinyauth_forwarder
+      # import tinyauth_forwarder
       reverse_proxy localhost:${cfg.wp.hostPort}
     '';
   };

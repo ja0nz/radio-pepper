@@ -8,7 +8,6 @@
 
 let
   # Caddy helper
-  mkAddr = addr: if ENV == "development" then "http://${addr}" else addr;
   port = {
     tinyauth = "3000";
     whoami = "8081";
@@ -21,9 +20,9 @@ in
     ./whoami
     ./tinyauth
     ./wordpress
-    ./azurecast
+    #./azurecast
   ];
-  _module.args = { inherit mkAddr port; };
+  _module.args = { inherit port; };
 
   # --- GLOBAL SETTINGS ---
   services.caddy = {

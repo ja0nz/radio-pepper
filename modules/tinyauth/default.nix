@@ -1,7 +1,6 @@
 {
   pkgs,
   lib,
-  mkAddr,
   port,
   vars,
   ...
@@ -18,7 +17,7 @@ let
   };
 in
 {
-  services.caddy.virtualHosts."${mkAddr cfg.domain}" = {
+  services.caddy.virtualHosts."${cfg.domain}" = {
     extraConfig = ''
       reverse_proxy localhost:${cfg.hostPort}
     '';

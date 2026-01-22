@@ -62,6 +62,7 @@
         extraModules = [
           inputs.microvm.nixosModules.microvm
           ./modules/vm-configuration.nix
+          ./modules/cloudflared.nix
         ];
         extraArgs = {
           ENV = "development";

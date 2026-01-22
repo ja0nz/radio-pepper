@@ -1,7 +1,6 @@
 {
   pkgs,
   lib,
-  mkAddr,
   port,
   vars,
   ...
@@ -23,7 +22,7 @@ in
   ]
   ++ (builtins.genList (x: x + 8000) 51); # Opens 8000-8050 for Stations/DJs
 
-  services.caddy.virtualHosts."${mkAddr cfg.domain}" = {
+  services.caddy.virtualHosts."${cfg.domain}" = {
     extraConfig = ''
       import tinyauth_forwarder
       reverse_proxy localhost:${cfg.hostPort}
