@@ -8,7 +8,6 @@
 
 {
   # Basic system configuration
-  system.stateVersion = "24.05";
   boot = {
     supportedFilesystems = [ "zfs" ];
     loader = {

@@ -16,7 +16,7 @@ sops = "latest"
 #dev-ssh = "mise r dev-ssh"
 #prod-ssh = "mise r prod-ssh"
 
-[tasks.vm-start]
+[tasks.vm-run]
 description = "Start the local development vm at localhost:8080"
 run = '''
     # 🚀 Starting local VM...
@@ -24,20 +24,33 @@ run = '''
     echo "The VM will be accessible at: http://localhost:8080"
     echo ""
 
-    mkdir -p "$MISE_PROJECT_ROOT/.state/vm"
-    export NIX_DISK_IMAGE="$MISE_PROJECT_ROOT/.state/vm/local.qcow2"
-
-    "$MISE_PROJECT_ROOT/build/vm/bin/run-pepper-vm"
+    nix run .#dev-local
 '''
 
-[tasks.vm-build]
-description = "Build a local qemu vm to ./build/vm"
+[tasks.dev-switch]
+description = "Connect to local "
 run = '''
-    # Building VM...
+     # Build the VM configuration on the host
 
-    nix build "$MISE_PROJECT_ROOT#nixosConfigurations.dev-local.config.system.build.vm" \
-        -o "$MISE_PROJECT_ROOT/build/vm"
-    echo "✅ VM built! Run 'mise r vm-start' to launch it"
+     echo "🔨 Building VM configuration..."
+     TARGET_PATH=$(nix build --no-substitute .#nixosConfigurations.dev-local.config.system.build.toplevel --print-out-paths)
+
+     if [ -z "$TARGET_PATH" ]; then
+         echo "❌ Build failed"
+         exit 1
+     fi
+
+     echo "🚀 Switching running VM to: $TARGET_PATH"
+
+     # 2. Run the switch command inside the VM via SSH
+     # We use the -t flag for SSH to ensure sudo has a tty if needed
+     ssh -i ./secrets/dev/ssh_host_ed25519_key \
+         -o IdentitiesOnly=yes \
+         -o UserKnownHostsFile=/dev/null \
+         -o StrictHostKeyChecking=no \
+         -p 2222 \
+         $USER@localhost \
+         "sudo $TARGET_PATH/bin/switch-to-configuration switch"
 '''
 
 [tasks.dev-ssh]
@@ -48,17 +61,12 @@ run = '''
     echo "waiting for local VM to accept connections..."
     until nc -z localhost 2222; do sleep 1; done
 
-    KEY_PATH=$(mktemp)
-    trap 'rm -f "$KEY_PATH"' EXIT
-    chmod 600 "$KEY_PATH"
-    cat ./secrets/dev/ssh_host_ed25519_key > "$KEY_PATH"
-    # fnox get LOCAL_SSH > "$KEY_PATH" # for mental reference if needed
-
     ssh -i ./secrets/dev/ssh_host_ed25519_key \
         -o IdentitiesOnly=yes \
         -o UserKnownHostsFile=/dev/null \
         -o StrictHostKeyChecking=no \
-        $USER@localhost -p 2222
+        -p 2222 \
+        $USER@localhost
 '''
 
 [tasks.prod-ssh]

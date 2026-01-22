@@ -4,6 +4,8 @@
 }:
 
 {
+  system.stateVersion = "24.05";
+
   # Networking
   networking = {
     hostName = "pepper";

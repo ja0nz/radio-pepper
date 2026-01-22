@@ -8,6 +8,14 @@
     disko.inputs.nixpkgs.follows = "nixpkgs";
     sops-nix.url = "github:Mic92/sops-nix";
     sops-nix.inputs.nixpkgs.follows = "nixpkgs";
+    microvm.url = "github:microvm-nix/microvm.nix";
+    microvm.inputs.nixpkgs.follows = "nixpkgs";
+  };
+
+  nixConfig = {
+    extra-substituters = [ "https://microvm.cachix.org" ];
+    extra-trusted-public-keys = [ "microvm.cachix.org-1:oXnBc6hRE3eX5rSYdRyMYXnfzcCxC7yKPTbZXALsqys=" ];
+    download-buffer-size = 536870912; # 512MB
   };
 
   outputs =
@@ -45,8 +53,14 @@
         };
     in
     {
+      # nix run or nix run .#dev-local
+      packages.${system} = {
+        default = self.packages.${system}.dev-local;
+        dev-local = self.nixosConfigurations.dev-local.config.microvm.declaredRunner;
+      };
       nixosConfigurations.dev-local = mkConfig {
         extraModules = [
+          inputs.microvm.nixosModules.microvm
           ./modules/vm-configuration.nix
         ];
         extraArgs = {

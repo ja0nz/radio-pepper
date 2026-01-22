@@ -8,12 +8,6 @@
 }:
 
 {
-  # Import base VM configuration
-  imports = [
-    "${modulesPath}/virtualisation/qemu-vm.nix"
-  ];
-  system.stateVersion = "24.05";
-
   # SOPS-NIX
   sops = {
     defaultSopsFormat = "yaml";
@@ -31,13 +25,36 @@
     mode = "0644";
   };
 
-  virtualisation = {
-    # Non graphic / terminal only
-    graphics = false;
-    memorySize = 4096;
-    cores = 4;
-    diskSize = 10000;
+  # Disable login prompt / SSH only
+  systemd.services."serial-getty@ttyS0".enable = false;
 
+  microvm = {
+    # Resources
+    mem = 4096;
+    vcpu = 4;
+    volumes = [
+      {
+        mountPoint = "/var";
+        image = "./.dev-local.img";
+        size = 3000; # 3GB -> not much needed as we use the nix store anyway
+      }
+    ];
+    shares = [
+      {
+        proto = "9p";
+        tag = "ro-store";
+        source = "/nix/store";
+        mountPoint = "/nix/.ro-store";
+      }
+    ];
+
+    interfaces = [
+      {
+        type = "user";
+        id = "vm-eth0";
+        mac = "02:00:00:00:00:01";
+      }
+    ];
     forwardPorts = [
       {
         from = "host";
@@ -66,39 +83,22 @@
         guest.port = 8000;
       }
     ];
+
+    hypervisor = "qemu";
+    socket = "control.socket";
   };
 
-  boot.kernelParams = [
-    "console=ttyS0"
+  # [22.01.2026] Fix: fix for hanging endless in shutdown sequence
+  # See:
+  # https://github.com/microvm-nix/microvm.nix/commit/736d43ae8552653ea8ad51fc8c79288668c866a5
+  # https://github.com/microvm-nix/microvm.nix/pull/381
+  systemd.mounts = lib.mkIf config.boot.initrd.systemd.enable [
+    {
+      what = "store";
+      where = "/nix/store";
+      # Generate a `nix-store.mount.d/overrides.conf`
+      overrideStrategy = "asDropin";
+      unitConfig.DefaultDependencies = false;
+    }
   ];
-
-  # Disable login
-  systemd.services."serial-getty@ttyS0".enable = false;
-
-  # Welcome Banner
-  systemd.services.boot-banner = {
-    description = "Print Welcome Banner to Console";
-    after = [ "multi-user.target" ];
-    wantedBy = [ "multi-user.target" ];
-
-    serviceConfig = {
-      Type = "oneshot";
-      # StandardOutput=tty tells systemd to send this specifically to the console
-      StandardOutput = "tty";
-      TTYPath = "/dev/ttyS0";
-      RemainAfterExit = true;
-    };
-
-    script = ''
-      echo -e "\n\e[1;32m============================================\e[0m"
-      echo -e "\e[1;32m   🚀 NIXOS CLOUD VM IS READY\e[0m"
-      echo -e "\e[1;32m============================================\e[0m"
-      echo -e "   Mode:      Local Development"
-      echo -e "   Services:  Caddy -> http://whoami.local:8080"
-      echo -e "              Whoami -> Port 8081"
-      echo -e ""
-      echo -e "   Access:    Run 'dev-ssh' in a new terminal"
-      echo -e "\e[1;32m============================================\e[0m\n"
-    '';
-  };
 }
