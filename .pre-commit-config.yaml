@@ -6,3 +6,11 @@ repos:
         entry: nix fmt
         language: system
         pass_filenames: false # nix fmt handles finding files
+
+    -   id: deadnix
+        name: deadnix
+        description: Scan Nix files for dead code
+        entry: deadnix
+        args: [--fail]
+        types: [nix]
+        language: system
