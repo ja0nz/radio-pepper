@@ -9,6 +9,7 @@ HETZNER_SERVER_NAME = "radio-pepper"
 [tools]
 age = "latest"
 hcloud = "latest"
+"nix:deadnix" = "latest"
 pre-commit = "latest"
 sops = "latest"
 

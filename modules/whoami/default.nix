@@ -1,8 +1,5 @@
 {
-  pkgs,
-  lib,
   port,
-  config,
   vars,
   ...
 }:
