@@ -27,7 +27,7 @@ in
 
     environment = {
       APP_URL = "https://${cfg.domain}";
-      USERS = "radiopepper:$2a$10$aCWwA5qW7pe/t88cfIDET..0R7EHDLpqHcROVPXOgKeyj1IFP07Km";
+      USERS = "radiopepper:$2a$10$4Rt1s3w9UY31FhsfLY6ceuwh5tM9TvizWXrOruiLq377Duy852.vG";
     };
 
     networks = [ cfg.network ];
