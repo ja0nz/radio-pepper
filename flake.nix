@@ -10,6 +10,7 @@
     sops-nix.inputs.nixpkgs.follows = "nixpkgs";
     microvm.url = "github:microvm-nix/microvm.nix";
     microvm.inputs.nixpkgs.follows = "nixpkgs";
+    quadlet-nix.url = "github:SEIAROTg/quadlet-nix";
   };
 
   nixConfig = {
@@ -32,6 +33,7 @@
         ./modules/base.nix
         ./modules/containers.nix
         inputs.sops-nix.nixosModules.sops
+        inputs.quadlet-nix.nixosModules.quadlet
       ];
 
       mkConfig =

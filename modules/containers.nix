@@ -38,10 +38,12 @@ in
     '';
   };
 
-  virtualisation.podman = {
+  virtualisation.quadlet = {
     enable = true;
-    autoPrune.enable = true;
+    autoUpdate = true;
+    calendar = "monthly";
   };
+  virtualisation.podman.autoPrune.enable = true;
 
   # --- GLOBAL NETWORK ---
   systemd.services.create-default-network = {

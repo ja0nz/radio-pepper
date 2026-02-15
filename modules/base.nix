@@ -65,7 +65,6 @@
     linger = true;
     description = "Container User";
     extraGroups = [
-      "podman"
       "wheel"
     ];
     openssh.authorizedKeys.keys = [
