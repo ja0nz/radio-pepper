@@ -28,6 +28,7 @@
     let
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
+      scripts = import ./scripts { inherit pkgs; };
 
       sharedModules = [
         ./modules/base.nix
@@ -66,9 +67,6 @@
           ./modules/vm-configuration.nix
           ./modules/cloudflared.nix
         ];
-        extraArgs = {
-          ENV = "development";
-        };
       };
 
       nixosConfigurations.prod-remote = mkConfig {
@@ -80,20 +78,34 @@
           inputs.disko.nixosModules.disko
           inputs.impermanence.nixosModules.impermanence
         ];
-        extraArgs = {
-          ENV = "production";
-        };
       };
 
-      formatter.x86_64-linux = nixpkgs.legacyPackages.${system}.nixfmt-tree;
+      formatter.x86_64-linux = pkgs.nixfmt-tree;
 
       devShells.${system}.default = pkgs.mkShell {
-        buildInputs = [
-          pkgs.mise
+        buildInputs = with pkgs; [
+          hcloud
+          deadnix
+          age
+          cloudflared
+          sops
+          pre-commit
+          # LSP Server
+          tombi
+          bash-language-server
+          nixd
         ];
+        USER = "radio";
+        HETZNER_SERVER_NAME = "radio-pepper";
         shellHook = ''
-          echo "Mise environment active"
+          echo "commands: ${builtins.concatStringsSep ", " (builtins.attrNames scripts)}"
+          export FLAKE_ROOT="$(git rev-parse --show-toplevel)"
         '';
       };
+
+      apps.${system} = builtins.mapAttrs (name: pkg: {
+        type = "app";
+        program = "${pkg}/bin/${name}";
+      }) scripts;
     };
 }

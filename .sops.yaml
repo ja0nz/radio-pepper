@@ -6,6 +6,11 @@ keys:
   - &ja0nz_key age186szpazmh9k0h2pyeuuzpzs4mdpd4rpucx9df3csaz7f5l6n2e3q8p8xaq
 
 creation_rules:
+  - path_regex: ^secrets\.enc\.yaml$
+    key_groups:
+      - age:
+          - *ja0nz_key
+
   - path_regex: secrets/prod.enc.yaml$
     key_groups:
       - age:

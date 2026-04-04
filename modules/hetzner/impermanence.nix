@@ -21,6 +21,7 @@
       "/etc/machine-id" # CRITICAL for journald and network logs
       "/etc/ssh/ssh_host_ed25519_key"
       "/etc/ssh/ssh_host_ed25519_key.pub"
+      "/etc/zfs/zpool.cache"
     ];
     users.${vars.userName} = {
       files = [
