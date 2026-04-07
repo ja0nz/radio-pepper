@@ -11,7 +11,7 @@
       "/etc/ssh/mnt"
       "/var/lib/nixos" # CRITICAL for User/Group ID consistency
       "/var/lib/systemd" # Keeps timers and back-end state
-      "/var/lib/containers" # Your Podman images and volumes
+      "/var/lib/containers/storage/volumes" # Podman volumes
       {
         directory = "/var/lib/caddy"; # Caddy SSL/State -> must be caddy:caddy
         user = "caddy";

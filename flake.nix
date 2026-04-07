@@ -60,6 +60,16 @@
           inputs.microvm.nixosModules.microvm
           ./modules/vm-configuration.nix
           ./modules/cloudflared.nix
+          (
+            { lib, ... }:
+            {
+              options.myOpts.cloudflared.ingress = lib.mkOption {
+                type = lib.types.attrsOf lib.types.str;
+                default = { };
+                description = "Cloudflare tunnel ingress rules, merged from all modules.";
+              };
+            }
+          )
         ];
       };
 

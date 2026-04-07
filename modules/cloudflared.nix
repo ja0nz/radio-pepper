@@ -41,9 +41,7 @@
       "${vars.CF_TUNNEL}" = {
         credentialsFile = config.sops.secrets."cf_tunnel_pepper".path;
         default = "http_status:404";
-        ingress = {
-          "ping.${vars.DOMAIN}" = "http://localhost:443";
-        };
+        ingress = config.myOpts.cloudflared.ingress;
       };
     };
   };

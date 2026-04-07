@@ -1,47 +1,37 @@
 {
   port,
   vars,
+  config,
   ...
 }:
 
 let
-  # --- CONFIG BLOCK ---
-  cfg = {
-    image = "docker.io/traefik/whoami:latest";
-    containerPort = "3993";
-    hostPort = port.whoami;
-    network = "podman";
-    domain = "ping.${vars.DOMAIN}";
-  };
+  id = "whoami-server";
+  image = "docker.io/traefik/whoami:latest";
+  publicNet = "whoami-net";
+  containerPort = "3993";
+  hostPort = port.whoami;
+  url = "ping.${vars.DOMAIN}";
 in
 {
-  services.caddy.virtualHosts."${cfg.domain}" = {
-    extraConfig = ''
-      reverse_proxy localhost:${cfg.hostPort}
-    '';
-  };
+  # only dev
+  # add dns route: cloudflared tunnel route dns $CF_TUNNEL <domain>
+  myOpts.cloudflared.ingress."${url}" = "http://localhost:443";
+  services.caddy.virtualHosts."${url}".extraConfig = ''
+    reverse_proxy localhost:${hostPort}
+  '';
 
-  # TODO https://github.com/SEIAROTg/quadlet-nix/blob/f4ae60350ea6015b6560cbd0e1f11f7e195c993d/container.nix#L12
-  # Follow up on this
-  virtualisation.quadlet.containers.whoami = {
+  virtualisation.quadlet.networks."${publicNet}" = { };
+  virtualisation.quadlet.containers.${id} = {
     containerConfig = {
-      image = cfg.image;
+      inherit image;
       dropCapabilities = [ "ALL" ];
       addCapabilities = [ ];
       noNewPrivileges = true;
-      publishPorts = [ "${cfg.hostPort}:${cfg.containerPort}" ];
-      environments.WHOAMI_PORT_NUMBER = cfg.containerPort;
-      networks = [ cfg.network ];
+      environments.TZ = config.time.timeZone;
+      publishPorts = [ "${hostPort}:${containerPort}" ];
+      environments.WHOAMI_PORT_NUMBER = containerPort;
+      networks = [ "${publicNet}" ];
     };
   };
-  # virtualisation.oci-containers.containers.whoami = {
-  #   image = cfg.image;
-  #   ports = [ "${cfg.hostPort}:${cfg.containerPort}" ];
-  #   environment.WHOAMI_PORT_NUMBER = cfg.containerPort;
-  #   networks = [ cfg.network ];
-  #   extraOptions = [
-  #     "--cap-drop=ALL"
-  #     "--security-opt=no-new-privileges"
-  #   ];
-  # };
 }

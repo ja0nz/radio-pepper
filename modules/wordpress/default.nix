@@ -1,5 +1,4 @@
 {
-  pkgs,
   port,
   config,
   vars,
@@ -7,36 +6,45 @@
 }:
 
 let
-  # --- CONFIG BLOCK ---
-  cfg = {
-    wp = {
-      image = "docker.io/library/wordpress:latest";
-      containerPort = "80";
-      hostPort = port.wordpress;
-    };
-    db = {
-      image = "docker.io/library/mariadb:latest";
-      port = "3306";
-    };
-    networks = {
-      public = "podman"; # Talk to Caddy
-      internal = "wordpress-net"; # Talk to DB
-    };
-    domain = "${vars.DOMAIN}";
+  # Common
+  publicNet = "wp-net";
+  internalNet = "wp-internal-net";
+  url = "${vars.DOMAIN}";
+
+  # Server
+  wp = {
+    id = "wordpress-server";
+    image = "docker.io/library/wordpress:latest";
+    containerPort = "80";
+    hostPort = port.wordpress;
   };
+
+  # DB
+  db = {
+    id = "wordpress-database";
+    image = "docker.io/library/mariadb:latest";
+    port = "3306";
+  };
+
+  # CLI
+  # cli = {
+  #   id = "wordpress-cli";
+  #   image = "docker.io/library/wordpress:cli-php8.5";
+  # };
 
 in
 {
-  services.caddy.virtualHosts."${cfg.domain}" = {
-    extraConfig = ''
-      import tinyauth_forwarder
-      reverse_proxy localhost:${cfg.wp.hostPort}
-    '';
-  };
+  # only dev
+  # add dns route: cloudflared tunnel route dns $CF_TUNNEL <domain>
+  myOpts.cloudflared.ingress."${url}" = "http://localhost:443";
+  services.caddy.virtualHosts."${url}".extraConfig = ''
+    import tinyauth_forwarder
+    reverse_proxy localhost:${wp.hostPort}
+  '';
 
   sops.secrets."wordpress_db_password" = { };
   sops.secrets."wordpress_root_password" = { };
-  sops.templates."mariaDB.env" = {
+  sops.templates."${db.id}.env" = {
     content = ''
       MYSQL_ROOT_PASSWORD=${config.sops.placeholder."wordpress_root_password"}
       MYSQL_DATABASE=wordpress
@@ -44,69 +52,86 @@ in
       MYSQL_PASSWORD=${config.sops.placeholder."wordpress_db_password"}
     '';
   };
-  sops.templates."wordpress.env" = {
+  sops.templates."${wp.id}.env" = {
     content = ''
       WORDPRESS_DB_NAME=wordpress
       WORDPRESS_DB_USER=wordpress
-      WORDPRESS_DB_HOST=wordpress-db:${cfg.db.port}
+      WORDPRESS_DB_HOST=${db.id}:${db.port}
       WORDPRESS_DB_PASSWORD=${config.sops.placeholder."wordpress_db_password"}
     '';
   };
 
-  virtualisation.oci-containers.containers = {
-    wordpress = {
-      image = cfg.wp.image;
-      ports = [ "${cfg.wp.hostPort}:${cfg.wp.containerPort}" ];
-      environmentFiles = [
-        config.sops.templates."wordpress.env".path
+  virtualisation.quadlet.networks."${publicNet}" = { };
+  virtualisation.quadlet.networks."${internalNet}" = {
+    networkConfig = {
+      internal = true;
+    };
+  };
+  virtualisation.quadlet.volumes."${wp.id}" = { };
+  virtualisation.quadlet.containers.${wp.id} = {
+    unitConfig = {
+      After = [
+        "${db.id}.service"
       ];
-      dependsOn = [ "wordpress-db" ];
-      volumes = [ "wordpress-data:/var/www/html" ];
+      Requires = [
+        "${db.id}.service"
+      ];
+    };
+    containerConfig = {
+      image = wp.image;
+      noNewPrivileges = true;
+      environmentFiles = [ config.sops.templates."${wp.id}.env".path ];
+      environments.TZ = config.time.timeZone;
+      publishPorts = [ "${wp.hostPort}:${wp.containerPort}" ];
+
       networks = [
-        cfg.networks.public
-        cfg.networks.internal
+        "${publicNet}"
+        "${internalNet}"
       ];
-      extraOptions = [
-        "--security-opt=no-new-privileges"
-      ];
-    };
-
-    # wordpress-cli = {
-    #   image = "docker.io/library/wordpress:cli-php8.5";
-    #   environmentFiles = [
-    #     config.sops.templates."wordpress.env".path
-    #   ];
-    #   dependsOn = [ "wordpress" ];
-    #   volumes = [ "wordpress-data:/var/www/html" ];
-    #   networks = [
-    #     cfg.networks.public
-    #     cfg.networks.internal
-    #   ];
-    # };
-
-    wordpress-db = {
-      image = cfg.db.image;
-      environmentFiles = [
-        config.sops.templates."mariaDB.env".path
-      ];
-      volumes = [ "wordpress-db-data:/var/lib/mysql" ];
-      networks = [ cfg.networks.internal ];
-      extraOptions = [
-        "--security-opt=no-new-privileges"
+      volumes = [
+        "${wp.id}:/var/www/html"
       ];
     };
   };
 
-  # Stack-specific internal network
-  systemd.services.create-wordpress-network = {
-    serviceConfig.Type = "oneshot";
-    wantedBy = [
-      "podman-wordpress.service"
-      "podman-wordpress-db.service"
-    ];
-    script = ''
-      ${pkgs.podman}/bin/podman network exists ${cfg.networks.internal} || \
-      ${pkgs.podman}/bin/podman network create --internal ${cfg.networks.internal}
-    '';
+  virtualisation.quadlet.volumes."${db.id}" = { };
+  virtualisation.quadlet.containers.${db.id} = {
+    containerConfig = {
+      image = db.image;
+      noNewPrivileges = true;
+      environmentFiles = [ config.sops.templates."${db.id}.env".path ];
+      environments.TZ = config.time.timeZone;
+      networks = [
+        "${internalNet}"
+      ];
+      volumes = [
+        "${db.id}:/var/lib/mysql"
+      ];
+    };
   };
+
+  # virtualisation.quadlet.containers.${cli.id} = {
+  #   unitConfig = {
+  #     After = [
+  #       "${wp.id}.service"
+  #     ];
+  #     Requires = [
+  #       "${wp.id}.service"
+  #     ];
+  #   };
+  #   containerConfig = {
+  #     image = cli.image;
+  #     noNewPrivileges = true;
+  #     environmentFiles = [ config.sops.templates."${wp.id}.env".path ];
+  #     environments.TZ = config.time.timeZone;
+
+  #     networks = [
+  #       "${publicNet}"
+  #       "${internalNet}"
+  #     ];
+  #     volumes = [
+  #       "${wp.id}:/var/www/html"
+  #     ];
+  #   };
+  # };
 }

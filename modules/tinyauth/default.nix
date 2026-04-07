@@ -1,39 +1,38 @@
 {
   port,
   vars,
+  config,
   ...
 }:
 
 let
-  # --- CONFIG BLOCK ---
-  cfg = {
-    image = "ghcr.io/steveiliop56/tinyauth:v4";
-    containerPort = "3000";
-    hostPort = port.tinyauth;
-    network = "podman";
-    domain = "auth.${vars.DOMAIN}";
-  };
+  id = "tinyauth-auth";
+  image = "ghcr.io/steveiliop56/tinyauth:v4";
+  publicNet = "tinyauth-net";
+  containerPort = "3000";
+  hostPort = port.tinyauth;
+  url = "auth.${vars.DOMAIN}";
 in
 {
-  services.caddy.virtualHosts."${cfg.domain}" = {
-    extraConfig = ''
-      reverse_proxy localhost:${cfg.hostPort}
-    '';
-  };
+  myOpts.cloudflared.ingress."${url}" = "http://localhost:443";
+  services.caddy.virtualHosts."${url}".extraConfig = ''
+    reverse_proxy localhost:${hostPort}
+  '';
 
-  virtualisation.oci-containers.containers.tinyauth = {
-    image = cfg.image;
-    ports = [ "${cfg.hostPort}:${cfg.containerPort}" ];
-
-    environment = {
-      APP_URL = "https://${cfg.domain}";
-      USERS = "radiopepper:$2a$10$4Rt1s3w9UY31FhsfLY6ceuwh5tM9TvizWXrOruiLq377Duy852.vG";
+  virtualisation.quadlet.networks."${publicNet}" = { };
+  virtualisation.quadlet.containers.${id} = {
+    containerConfig = {
+      inherit image;
+      dropCapabilities = [ "ALL" ];
+      addCapabilities = [ ];
+      noNewPrivileges = true;
+      environments.TZ = config.time.timeZone;
+      publishPorts = [ "${hostPort}:${containerPort}" ];
+      environments = {
+        APP_URL = "https://${url}";
+        USERS = "radiopepper:$2a$10$Ljo.eXhudwLWbAdi8lT5KuNjw/uvsVGKyDN6azrFV1DLAUw96G9p.";
+      };
+      networks = [ "${publicNet}" ];
     };
-
-    networks = [ cfg.network ];
-    autoStart = true;
-    extraOptions = [
-      "--security-opt=no-new-privileges"
-    ];
   };
 }

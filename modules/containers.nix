@@ -1,5 +1,4 @@
 {
-  pkgs,
   ...
 }:
 
@@ -16,8 +15,8 @@ in
   imports = [
     ./whoami
     ./tinyauth
-    # ./wordpress
-    # ./azurecast
+    ./wordpress
+    ./azurecast
   ];
   _module.args = { inherit port; };
 
@@ -46,14 +45,4 @@ in
     };
   };
   virtualisation.podman.autoPrune.enable = true;
-
-  # --- GLOBAL NETWORK ---
-  systemd.services.create-default-network = {
-    serviceConfig.Type = "oneshot";
-    wantedBy = [ "multi-user.target" ];
-    script = ''
-      ${pkgs.podman}/bin/podman network exists podman || \
-      ${pkgs.podman}/bin/podman network create podman
-    '';
-  };
 }
