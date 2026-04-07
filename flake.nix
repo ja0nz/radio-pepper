@@ -32,7 +32,7 @@
 
       sharedModules = [
         ./modules/base.nix
-        ./modules/containers.nix
+        ./modules/containers
         inputs.sops-nix.nixosModules.sops
         inputs.quadlet-nix.nixosModules.quadlet
       ];

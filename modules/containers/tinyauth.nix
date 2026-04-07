@@ -14,10 +14,16 @@ let
   url = "auth.${vars.DOMAIN}";
 in
 {
-  myOpts.cloudflared.ingress."${url}" = "http://localhost:443";
-  services.caddy.virtualHosts."${url}".extraConfig = ''
-    reverse_proxy localhost:${hostPort}
-  '';
+  # only dev
+  # add dns route: cloudflared tunnel route dns $CF_TUNNEL dev.$url
+  myOpts.cloudflared.ingress."dev-${url}" = "http://localhost:443";
+  services.caddy.virtualHosts."${url}" = {
+    serverAliases = [ "dev-${url}" ];
+    extraConfig = ''
+      import tinyauth_forwarder
+      reverse_proxy localhost:${hostPort}
+    '';
+  };
 
   virtualisation.quadlet.networks."${publicNet}" = { };
   virtualisation.quadlet.containers.${id} = {

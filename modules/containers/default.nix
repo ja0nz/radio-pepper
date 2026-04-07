@@ -13,10 +13,10 @@ let
 in
 {
   imports = [
-    ./whoami
-    ./tinyauth
-    ./wordpress
-    ./azurecast
+    ./whoami.nix
+    ./tinyauth.nix
+    #./wordpress.nix
+    #./azuracast.nix
   ];
   _module.args = { inherit port; };
 

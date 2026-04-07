@@ -15,11 +15,14 @@ let
 in
 {
   # only dev
-  # add dns route: cloudflared tunnel route dns $CF_TUNNEL <domain>
-  myOpts.cloudflared.ingress."${url}" = "http://localhost:443";
-  services.caddy.virtualHosts."${url}".extraConfig = ''
-    reverse_proxy localhost:${hostPort}
-  '';
+  # add dns route: cloudflared tunnel route dns $CF_TUNNEL dev.$url
+  myOpts.cloudflared.ingress."dev-${url}" = "http://localhost:443";
+  services.caddy.virtualHosts."${url}" = {
+    serverAliases = [ "dev-${url}" ];
+    extraConfig = ''
+      reverse_proxy localhost:${hostPort}
+    '';
+  };
 
   virtualisation.quadlet.networks."${publicNet}" = { };
   virtualisation.quadlet.containers.${id} = {

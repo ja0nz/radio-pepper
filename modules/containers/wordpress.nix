@@ -9,7 +9,7 @@ let
   # Common
   publicNet = "wp-net";
   internalNet = "wp-internal-net";
-  url = "${vars.DOMAIN}";
+  url = "wp.${vars.DOMAIN}";
 
   # Server
   wp = {
@@ -35,12 +35,15 @@ let
 in
 {
   # only dev
-  # add dns route: cloudflared tunnel route dns $CF_TUNNEL <domain>
-  myOpts.cloudflared.ingress."${url}" = "http://localhost:443";
-  services.caddy.virtualHosts."${url}".extraConfig = ''
-    import tinyauth_forwarder
-    reverse_proxy localhost:${wp.hostPort}
-  '';
+  # add dns route: cloudflared tunnel route dns $CF_TUNNEL dev.$url
+  myOpts.cloudflared.ingress."dev-${url}" = "http://localhost:443";
+  services.caddy.virtualHosts."${url}" = {
+    serverAliases = [ "dev-${url}" ];
+    extraConfig = ''
+      import tinyauth_forwarder
+      reverse_proxy localhost:${wp.hostPort}
+    '';
+  };
 
   sops.secrets."wordpress_db_password" = { };
   sops.secrets."wordpress_root_password" = { };

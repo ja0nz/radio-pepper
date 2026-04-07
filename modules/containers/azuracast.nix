@@ -20,12 +20,15 @@ in
   ++ (builtins.genList (x: x + 8000) 51); # Opens 8000-8050 for Stations/DJs
 
   # only dev
-  # add dns route: cloudflared tunnel route dns $CF_TUNNEL <domain>
-  myOpts.cloudflared.ingress."${url}" = "http://localhost:443";
-  services.caddy.virtualHosts."${url}".extraConfig = ''
-    import tinyauth_forwarder
-    reverse_proxy localhost:${hostPort}
-  '';
+  # add dns route: cloudflared tunnel route dns $CF_TUNNEL dev.$url
+  myOpts.cloudflared.ingress."dev-${url}" = "http://localhost:443";
+  services.caddy.virtualHosts."${url}" = {
+    serverAliases = [ "dev-${url}" ];
+    extraConfig = ''
+      import tinyauth_forwarder
+      reverse_proxy localhost:${hostPort}
+    '';
+  };
 
   virtualisation.quadlet.networks."${publicNet}" = { };
   virtualisation.quadlet.containers.${id} = {
