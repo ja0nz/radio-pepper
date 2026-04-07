@@ -3,21 +3,7 @@
 }:
 let
   sopsExe = pkgs.lib.getExe pkgs.sops;
-  # sysCtl = pkgs.lib.getExe' pkgs.systemd "systemctl";
-  jCtl = pkgs.lib.getExe' pkgs.systemd "journalctl";
   script = pkgs.writeShellScriptBin;
-
-  mkscript =
-    name: body:
-    script name ''
-      set -e
-      NAME="$1"
-      if [ -z "$NAME" ]; then
-        echo "Usage: ${name} <name>"
-        exit 1
-      fi
-      ${body}
-    '';
 in
 {
   deploy-vm = script "deploy-vm" (builtins.readFile ./deploy-vm.sh);
@@ -61,9 +47,5 @@ in
 
     export NIX_SSHOPTS="-o IdentitiesOnly=yes -i $KEY_PATH"
     ssh $NIX_SSHOPTS $VIRT_USER@$REMOTE_IP4
-  '';
-
-  vm-log-follow = mkscript "vm-log-follow" ''
-    ${jCtl} -u microvm@$NAME.service -f
   '';
 }
