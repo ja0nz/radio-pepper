@@ -1,4 +1,3 @@
 .direnv
 .dev-host-key
-.dev-local.img
-/secrets/dev/cf-token.env
+.dev-var.img

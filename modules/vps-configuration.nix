@@ -33,10 +33,4 @@
   };
   services.zfs.autoSnapshot.enable = true;
 
-  # SOPS-NIX
-  sops = {
-    defaultSopsFormat = "yaml";
-    defaultSopsFile = ../secrets/prod.enc.yaml;
-    age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
-  };
 }

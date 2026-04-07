@@ -8,23 +8,22 @@ EXTRA_FILES="$WS/extra"
 
 # --- Extract host keys for nixos-anywhere ---
 install -d -m755 "$EXTRA_FILES/persist/etc/ssh/mnt"
-sops -d --extract '["ssh_host_ed25519_key"]' "$FLAKE_ROOT/secrets.enc.yaml" \
+sops -d --extract '["ssh_host_ed25519_key"]' "$SECRETS" \
      > "$EXTRA_FILES/persist/etc/ssh/mnt/ssh_host_ed25519_key"
-sops -d --extract '["ssh_host_ed25519_key_pub"]' "$FLAKE_ROOT/secrets.enc.yaml" \
+sops -d --extract '["ssh_host_ed25519_key_pub"]' "$SECRETS" \
      > "$EXTRA_FILES/persist/etc/ssh/mnt/ssh_host_ed25519_key.pub"
 chmod 600 "$EXTRA_FILES/persist/etc/ssh/mnt/ssh_host_ed25519_key"
 
 # --- Extract deployment key for SSH access ---
-sops -d --extract '["id_ed25519"]' "$FLAKE_ROOT/secrets.enc.yaml" \
-     > "$KEY_PATH"
+sops -d --extract '["id_ed25519"]' "$SECRETS" > "$KEY_PATH"
 chmod 600 "$KEY_PATH"
 
 # === 5. Probe: Determine if NixOS is already running ===
-export HCLOUD_TOKEN=$(sops -d --extract '["hetzner_api_token"]' "$FLAKE_ROOT/secrets.enc.yaml")
+export HCLOUD_TOKEN=$(sops -d --extract '["hetzner_api_token"]' "$SECRETS")
 REMOTE_IP4=$(hcloud server ip "$HETZNER_SERVER_NAME")
 echo "🔍 Probing $REMOTE_IP4 for environment state..."
 
-if ssh -i "$KEY_PATH" "$USER@$REMOTE_IP4" "[ -e /run/current-system ]"; then
+if ssh -i "$KEY_PATH" "$VIRT_USER@$REMOTE_IP4" "[ -e /run/current-system ]"; then
     # --- 6a. Update: Run nixos-rebuild switch (In-place) ---
     echo "✅ NixOS detected. Updating via nixos-rebuild..."
 
@@ -32,8 +31,8 @@ if ssh -i "$KEY_PATH" "$USER@$REMOTE_IP4" "[ -e /run/current-system ]"; then
     export NIX_SSHOPTS="-i $KEY_PATH"
     nixos-rebuild switch \
         --flake "$FLAKE_ROOT#prod-remote" \
-        --target-host "$USER@$REMOTE_IP4" \
-        --build-host "$USER@$REMOTE_IP4" \
+        --target-host "$VIRT_USER@$REMOTE_IP4" \
+        --build-host "$VIRT_USER@$REMOTE_IP4" \
         --sudo
 
 else

@@ -40,18 +40,12 @@
       mkConfig =
         {
           extraModules ? [ ],
-          extraArgs ? [ ],
         }:
         nixpkgs.lib.nixosSystem {
           inherit system;
           specialArgs = {
-            vars = {
-              sshPort = 22;
-              userName = "radio";
-              rootDomain = "radiopepper.website";
-            };
-          }
-          // extraArgs;
+            vars = builtins.fromJSON (builtins.readFile ./env.json);
+          };
           modules = sharedModules ++ extraModules;
         };
     in
@@ -82,26 +76,32 @@
 
       formatter.x86_64-linux = pkgs.nixfmt-tree;
 
-      devShells.${system}.default = pkgs.mkShell {
-        buildInputs = with pkgs; [
-          hcloud
-          deadnix
-          age
-          cloudflared
-          sops
-          pre-commit
-          # LSP Server
-          tombi
-          bash-language-server
-          nixd
-        ];
-        USER = "radio";
-        HETZNER_SERVER_NAME = "radio-pepper";
-        shellHook = ''
-          echo "commands: ${builtins.concatStringsSep ", " (builtins.attrNames scripts)}"
-          export FLAKE_ROOT="$(git rev-parse --show-toplevel)"
-        '';
-      };
+      devShells.${system}.default = pkgs.mkShell (
+        {
+          buildInputs =
+            with pkgs;
+            [
+              hcloud
+              deadnix
+              age
+              cloudflared
+              sops
+              pre-commit
+              # LSP Server
+              tombi
+              bash-language-server
+              nixd
+            ]
+            ++ (builtins.attrValues scripts);
+          # SSH user
+          shellHook = ''
+            echo "commands: ${builtins.concatStringsSep ", " (builtins.attrNames scripts)}"
+            export FLAKE_ROOT="$(git rev-parse --show-toplevel)"
+            export SECRETS="$FLAKE_ROOT/secrets.enc.yaml"
+          '';
+        }
+        // builtins.fromJSON (builtins.readFile ./env.json)
+      );
 
       apps.${system} = builtins.mapAttrs (name: pkg: {
         type = "app";

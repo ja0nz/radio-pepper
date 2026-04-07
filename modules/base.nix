@@ -3,8 +3,19 @@
   ...
 }:
 
+let
+  hostKey = "/etc/ssh/mnt/ssh_host_ed25519_key";
+in
 {
   system.stateVersion = "24.05";
+  time.timeZone = "Europe/Berlin";
+
+  # SOPS-NIX
+  sops = {
+    defaultSopsFormat = "yaml";
+    defaultSopsFile = ../secrets.enc.yaml;
+    age.sshKeyPaths = [ hostKey ];
+  };
 
   # Networking
   networking = {
@@ -14,7 +25,6 @@
       enable = true;
       trustedInterfaces = [ "podman1" ];
       allowedTCPPorts = [
-        vars.sshPort
         80
         443
       ];
@@ -24,12 +34,9 @@
   # SSH
   services.openssh = {
     enable = true;
-    ports = [
-      vars.sshPort
-    ];
     hostKeys = [
       {
-        path = "/etc/ssh/ssh_host_ed25519_key";
+        path = hostKey;
         type = "ed25519";
       }
     ];
@@ -59,7 +66,7 @@
   };
 
   # User for running containers
-  users.users.${vars.userName} = {
+  users.users.${vars.VIRT_USER} = {
     isNormalUser = true;
     uid = 1000;
     linger = true;
@@ -68,14 +75,13 @@
       "wheel"
     ];
     openssh.authorizedKeys.keys = [
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEaSLRKnMbzk0OtGKEclUyUZytRdUL/CjZaFup5xcgoL production"
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKqGxrOa157jODZxdEH9RBclmSE8YmwO40S5owCAtDKU development"
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEaSLRKnMbzk0OtGKEclUyUZytRdUL/CjZaFup5xcgoL"
     ];
   };
 
   security.sudo.extraRules = [
     {
-      users = [ "${vars.userName}" ];
+      users = [ "${vars.VIRT_USER}" ];
       commands = [
         {
           command = "ALL";

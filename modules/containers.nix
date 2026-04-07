@@ -16,8 +16,8 @@ in
   imports = [
     ./whoami
     ./tinyauth
-    ./wordpress
-    ./azurecast
+    # ./wordpress
+    # ./azurecast
   ];
   _module.args = { inherit port; };
 
@@ -40,8 +40,10 @@ in
 
   virtualisation.quadlet = {
     enable = true;
-    autoUpdate = true;
-    calendar = "monthly";
+    autoUpdate = {
+      enable = true;
+      calendar = "monthly";
+    };
   };
   virtualisation.podman.autoPrune.enable = true;
 

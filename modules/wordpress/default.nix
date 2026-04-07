@@ -22,7 +22,7 @@ let
       public = "podman"; # Talk to Caddy
       internal = "wordpress-net"; # Talk to DB
     };
-    domain = "${vars.rootDomain}";
+    domain = "${vars.DOMAIN}";
   };
 
 in

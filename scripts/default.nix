@@ -4,7 +4,7 @@
 let
   sopsExe = pkgs.lib.getExe pkgs.sops;
   # sysCtl = pkgs.lib.getExe' pkgs.systemd "systemctl";
-  # jCtl = pkgs.lib.getExe' pkgs.systemd "journalctl";
+  jCtl = pkgs.lib.getExe' pkgs.systemd "journalctl";
   script = pkgs.writeShellScriptBin;
 
   mkscript =
@@ -23,31 +23,30 @@ in
   deploy-vm = script "deploy-vm" (builtins.readFile ./deploy-vm.sh);
   deploy-remote = script "deploy-remote" (builtins.readFile ./deploy-remote.sh);
 
-  ssh-local = mkscript "ssh-local" ''
-    # Connect SSH on port 2222...
+  ssh-local = script "ssh-local" ''
+    # Connect SSH on port $DEV_SSH_PORT ...
 
     echo "waiting for local VM to accept connections..."
-    until nc -z localhost 2222; do sleep 1; done
+    until nc -z localhost "$DEV_SSH_PORT"; do sleep 1; done
 
     # Extracting the SSH key with sops
     KEY_PATH=$(mktemp)
     trap 'rm -f "$KEY_PATH"' EXIT
     chmod 600 "$KEY_PATH"
-    ${sopsExe} -d --extract '["id_ed25519"]' "$FLAKE_ROOT/secrets.enc.yaml" \
-        > "$KEY_PATH"
+    ${sopsExe} -d --extract '["id_ed25519"]' "$SECRETS" > "$KEY_PATH"
 
-    export NIX_SSHOPTS="-o IdentitiesOnly=yes -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -p 2222 -i $KEY_PATH"
-    ssh $NIX_SSHOPTS $USER@localhost
+    export NIX_SSHOPTS="-o IdentitiesOnly=yes -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -p $DEV_SSH_PORT -i $KEY_PATH"
+    ssh $NIX_SSHOPTS $VIRT_USER@localhost
   '';
 
-  ssh-remote = mkscript "ssh-remote" ''
+  ssh-remote = script "ssh-remote" ''
     # Connect SSH on port 22...
 
-    export HCLOUD_TOKEN=$(sops -d --extract '["hetzner_api_token"]' "$FLAKE_ROOT/secrets.enc.yaml")
+    export HCLOUD_TOKEN=$(sops -d --extract '["hetzner_api_token"]' "$SECRETS")
     # Check if the variable is empty
     if [ -z "$HCLOUD_TOKEN" ]; then
         echo "❌ Error: HCLOUD_TOKEN is not set."
-        echo "💡 Hint: Ensure you can access secrets.enc.yaml for the token."
+        echo "💡 Hint: Ensure you can access $SECRETS for the token."
         exit 1
     fi
 
@@ -58,10 +57,13 @@ in
     KEY_PATH=$(mktemp)
     trap 'rm -f "$KEY_PATH"' EXIT
     chmod 600 "$KEY_PATH"
-    ${sopsExe} -d --extract '["id_ed25519"]' "$FLAKE_ROOT/secrets.enc.yaml" \
-        > "$KEY_PATH"
+    ${sopsExe} -d --extract '["id_ed25519"]' "$SECRETS" > "$KEY_PATH"
 
-    export NIX_SSHOPTS="-o IdentitiesOnly=yes -p 2222 -i $KEY_PATH"
-    ssh $NIX_SSHOPTS $USER@$REMOTE_IP4
+    export NIX_SSHOPTS="-o IdentitiesOnly=yes -i $KEY_PATH"
+    ssh $NIX_SSHOPTS $VIRT_USER@$REMOTE_IP4
+  '';
+
+  vm-log-follow = mkscript "vm-log-follow" ''
+    ${jCtl} -u microvm@$NAME.service -f
   '';
 }

@@ -5,26 +5,13 @@
   ...
 }:
 
+let
+  secretDir = "/etc/ssh/mnt";
+in
 {
-  # SOPS-NIX
-  sops = {
-    defaultSopsFormat = "yaml";
-    defaultSopsFile = ../secrets/dev/dev.enc.yaml;
-    age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
-  };
-
-  environment.etc."ssh/ssh_host_ed25519_key" = {
-    source = ../secrets/dev/ssh_host_ed25519_key;
-    mode = "0600";
-  };
-
-  environment.etc."ssh/ssh_host_ed25519_key.pub" = {
-    source = ../secrets/dev/ssh_host_ed25519_key.pub;
-    mode = "0644";
-  };
-
   # Disable login prompt / SSH only
   systemd.services."serial-getty@ttyS0".enable = false;
+  fileSystems."${secretDir}".neededForBoot = true;
 
   microvm = {
     # Resources
@@ -33,8 +20,8 @@
     volumes = [
       {
         mountPoint = "/var";
-        image = "./.dev-local.img";
-        size = 10000; # 10GB
+        image = "./.dev-var.img";
+        size = 5000; # 5GB
       }
     ];
     shares = [
@@ -47,10 +34,9 @@
       }
       {
         proto = "9p";
-        tag = "dev-secrets";
-        source = "./secrets/dev";
-        mountPoint = "/var/dev-secrets";
-        readOnly = true;
+        tag = "dev-host-key";
+        source = ".dev-host-key";
+        mountPoint = "${secretDir}";
       }
     ];
 
@@ -74,8 +60,8 @@
       }
       {
         from = "host";
-        host.port = 2222;
-        guest.port = vars.sshPort;
+        host.port = vars.DEV_SSH_PORT;
+        guest.port = 22;
       }
       # Azuracast
       {

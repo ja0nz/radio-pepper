@@ -11,7 +11,7 @@ let
     containerPort = "3000";
     hostPort = port.tinyauth;
     network = "podman";
-    domain = "auth.${vars.rootDomain}";
+    domain = "auth.${vars.DOMAIN}";
   };
 in
 {

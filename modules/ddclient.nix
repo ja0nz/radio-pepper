@@ -5,7 +5,7 @@
 }:
 
 {
-  sops.secrets."cloudflare_namecheap_token" = { };
+  sops.secrets."cf_dns_api_token" = { };
 
   # https://search.nixos.org/options?query=ddclient
   # https://github.com/ddclient/ddclient/blob/main/ddclient.conf.in
@@ -14,12 +14,12 @@
     usev4 = "webv4, webv4=api.ipify.org, webv4=ipv4.icanhazip.com";
     usev6 = "webv6, webv6=api6.ipify.org, webv6=icanhazip.com";
     protocol = "cloudflare";
-    zone = "${vars.rootDomain}";
+    zone = "${vars.DOMAIN}";
     userName = "token";
-    passwordFile = config.sops.secrets."cloudflare_namecheap_token".path;
+    passwordFile = config.sops.secrets."cf_dns_api_token".path;
     domains = [
-      "${vars.rootDomain}"
-      "*.${vars.rootDomain}"
+      "${vars.DOMAIN}"
+      "*.${vars.DOMAIN}"
     ];
   };
 }

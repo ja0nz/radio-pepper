@@ -21,27 +21,30 @@
   tunnel token.
   - caddy: Acts as the entry point for traffic coming out of the tunnel.
 */
-{ pkgs, vars, ... }:
+{
+  config,
+  vars,
+  ...
+}:
 
 {
+  sops.secrets."cf_tunnel_pepper" = { };
   services.caddy.globalConfig = ''
     auto_https off
     http_port 443
   '';
 
-  systemd.services.cloudflare-tunnel = {
-    description = "Cloudflare Tunnel: Radio Pepper";
-    after = [ "network-online.target" ];
-    wants = [ "network-online.target" ];
-    wantedBy = [ "multi-user.target" ];
-
-    serviceConfig = {
-      EnvironmentFile = "/var/dev-secrets/cf-token.env";
-      ExecStart = "${pkgs.cloudflared}/bin/cloudflared tunnel --no-autoupdate run --token \${CF_TUNNEL_TOKEN}";
-
-      User = "${vars.userName}";
-      Group = "users";
-      Restart = "on-failure";
+  services.cloudflared = {
+    enable = true;
+    tunnels = {
+      # cloudflared tunnel create Pepper
+      "${vars.CF_TUNNEL}" = {
+        credentialsFile = config.sops.secrets."cf_tunnel_pepper".path;
+        default = "http_status:404";
+        ingress = {
+          "ping.${vars.DOMAIN}" = "http://localhost:443";
+        };
+      };
     };
   };
 }

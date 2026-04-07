@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-if ! nc -z localhost 2222 2>/dev/null; then
-    echo "🌐 SSH port 2222 is closed. Starting a new VM..."
+if ! nc -z localhost "$DEV_SSH_PORT" 2>/dev/null; then
+    echo "🌐 SSH port $DEV_SSH_PORT is closed. Starting a new VM..."
 
     SSH_KEY_DIR="$FLAKE_ROOT/.dev-host-key"
     SSH_HOST_KEY="$SSH_KEY_DIR/ssh_host_ed25519_key"
@@ -10,13 +10,12 @@ if ! nc -z localhost 2222 2>/dev/null; then
     mkdir -p "$SSH_KEY_DIR"
 
     # Extract Private Key
-    sops -d --extract '["ssh_host_ed25519_key"]' "$FLAKE_ROOT/secrets.enc.yaml" | \
-        tee "$SSH_HOST_KEY" > /dev/null
+    sops -d --extract '["ssh_host_ed25519_key"]' "$SECRETS" | tee "$SSH_HOST_KEY" > /dev/null
     chmod 600 "$SSH_HOST_KEY"
 
     nix run $FLAKE_ROOT#dev-local
 else
-    echo "✅ VM is already running on port 2222. Switching configuration..."
+    echo "✅ VM is already running on port $DEV_SSH_PORT. Switching configuration..."
 
     # --- Original switch-vm logic ---
     # Build the VM configuration on the host
@@ -34,10 +33,9 @@ else
     KEY_PATH=$(mktemp)
     trap 'rm -f "$KEY_PATH"' EXIT
     chmod 600 "$KEY_PATH"
-    sops -d --extract '["id_ed25519"]' "$FLAKE_ROOT/secrets.enc.yaml" \
-        > "$KEY_PATH"
+    sops -d --extract '["id_ed25519"]' "$SECRETS" > "$KEY_PATH"
 
-    export NIX_SSHOPTS="-o IdentitiesOnly=yes -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -p 2222 -i $KEY_PATH"
+    export NIX_SSHOPTS="-o IdentitiesOnly=yes -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -p $DEV_SSH_PORT -i $KEY_PATH"
     # Find the HM generation path referenced by the service and copy its closure
     HM_GEN_PATH=$(grep -oP '/nix/store/\S+-home-manager-generation' \
         "$TARGET_PATH/etc/systemd/system/home-manager-containers.service" | head -1)
@@ -45,9 +43,9 @@ else
         echo "⚠️  No HM generation found in service file, skipping copy"
     else
         echo "📦 Copying HM generation to remote: $HM_GEN_PATH"
-        nix copy --no-substitute --to "ssh://$USER@localhost" "$HM_GEN_PATH"
+        nix copy --no-substitute --to "ssh://$VIRT_USER@localhost" "$HM_GEN_PATH"
     fi
 
     # Run the switch command inside the VM via SSH
-    ssh $NIX_SSHOPTS $USER@localhost "sudo $TARGET_PATH/bin/switch-to-configuration switch"
+    ssh $NIX_SSHOPTS $VIRT_USER@localhost "sudo $TARGET_PATH/bin/switch-to-configuration switch"
 fi
