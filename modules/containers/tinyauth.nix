@@ -11,19 +11,15 @@ let
   publicNet = "tinyauth-net";
   containerPort = "3000";
   hostPort = port.tinyauth;
-  url = "auth.${vars.DOMAIN}";
+  url = "dev-auth.${vars.DOMAIN}";
 in
 {
   # only dev
-  # add dns route: cloudflared tunnel route dns $CF_TUNNEL dev.$url
-  myOpts.cloudflared.ingress."dev-${url}" = "http://localhost:443";
-  services.caddy.virtualHosts."${url}" = {
-    serverAliases = [ "dev-${url}" ];
-    extraConfig = ''
-      import tinyauth_forwarder
-      reverse_proxy localhost:${hostPort}
-    '';
-  };
+  # add dns route: cloudflared tunnel route dns $CF_TUNNEL $url
+  myOpts.cloudflared.ingress."${url}" = "http://localhost:443";
+  services.caddy.virtualHosts."${url}".extraConfig = ''
+    reverse_proxy localhost:${hostPort}
+  '';
 
   virtualisation.quadlet.networks."${publicNet}" = { };
   virtualisation.quadlet.containers.${id} = {

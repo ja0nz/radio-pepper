@@ -15,8 +15,8 @@ in
   imports = [
     ./whoami.nix
     ./tinyauth.nix
-    #./wordpress.nix
-    #./azuracast.nix
+    ./wordpress.nix
+    ./azuracast.nix
   ];
   _module.args = { inherit port; };
 

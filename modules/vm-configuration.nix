@@ -21,7 +21,7 @@ in
       {
         mountPoint = "/var";
         image = "./.dev-var.img";
-        size = 5000; # 5GB
+        size = 7000; # 7GB
       }
     ];
     shares = [
