@@ -154,14 +154,16 @@ Key configuration is stored in `env.json`:
 
 ### Prerequisites
 
-1. **Install Nix and direnv**:
-   - **Nix**: Follow the official installation guide
+1. **Install Nix**:
+   - Follow the official installation guide
      - [Nix Installation](https://nixos.org/download.html)
-   - **direnv**: Install via your system package manager or Nix
+   
+2. **Optional: Install direnv** (recommended for development convenience):
+   - Install via your system package manager or Nix
      ```bash
      nix profile install nixpkgs#direnv
      ```
-   - **Setup direnv**:
+   - **Setup direnv** (optional):
      ```bash
      echo "eval "$(direnv hook bash)"" >> ~/.bashrc
      source ~/.bashrc
@@ -175,12 +177,12 @@ Key configuration is stored in `env.json`:
 
 3. **Setup SOPS (Secrets Management)**:
    **Option A: Get your key added by admin**
-   - Contact the admin to have your GPG key added to the project's `.sops.yaml`
-
+   - Contact the admin to have your AGE key added to the project's `.sops.yaml`
+   
    **Option B: Start from scratch**
    ```bash
-   # Generate a new GPG key
-   gpg --full-generate-key
+   # Generate a new AGE key
+   age-keygen
    # Add your key to .sops.yaml
    ```
 
